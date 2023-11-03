@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+<h1 align="center">Tugas Besar 2 IF2121 Aljabar Linear dan Geometri</h1>
+<h3 align="center">Kelompok 5 - {JUDUL}</h3>
+<h3 align="center">Kelas 01 & 02 IF-G</h3>
+<p align="center"></p>
+<p align="center">{TITLE}</p>
+<p align="center">Semester ganjil Tahun 2023/2024</p>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Table of Contents
 
-## Available Scripts
+- [Overview](#overview)
+- [Built With](#built-with)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Features](#features)
+- [File Structures](#file-structures)
+- [About](#about)
 
-In the project directory, you can run:
 
-### `npm start`
+## Overview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+![screenshot](LINK FOTO)
+Our Team members :
+- 13522045 - Elbert Chailes [@ChaiGans](https://github.com/ChaiGans)
+- 13522047 - Farel Winalda [FarelW](https://github.com/FarelW)
+- 13522111 - Ivan Hendrawan Tan [@Bodleh](https://github.com/Bodleh)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Our mentors:
+- Dr. Ir. Rinaldi Munir, M.T.
+- 13521031 - Fahrian Afdholi
 
-### `npm test`
+Here is the purpose of making this project :
+- Create a library (library or package) in Java to find SPL solutions using the Gauss elimination method, Gauss-Jordan elimination method, inverse matrix method, and Cramer's rule (Cramer's rule specifically for SPL with n variables and n equations), calculating the matrix determinant using row reduction and with cofactor expansion, and calculating matrix inverses.
+- Solve various problems in SPL form, solve interpolation and linear regression problems, calculate inverse matrices, calculate matrix determinants using various methods (row reduction and cofactor expansion).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Built With
+- [React](https://react.dev/)
+- [GO Lang](https://go.dev/)
+- [Tailwind](https://tailwindcss.com/)
+- [Tailwind](https://tailwindcss.com/)
 
-### `npm run build`
+## Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+If you want to run this project you will need to do some installation, such as :
+- HTML 5 version
+- npm (Package manager for the JavaScript programming language)
+- GO Language version 18 or higher
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+If you want to run this program you will need to do these steps
 
-### `npm run eject`
+1. Clone this repository :
+```shell
+git clone https://github.com/FarelW/Algeo02-22045
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. Package Download :
+```shell
+npm install
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. Run on your localhost server :
+```shell
+npm run start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Features(Beneri)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Here is the purpose of making this project :
+* The program contains of menu options (SPL, Determinant, Inverse, Interpolation Polynomial,Bicubic Spline Interpolation, and Regression)
+* The program can receive input either from the keyboard (terminal) or read input from text files.
+* Step by step how to get the answer
+* File output (file.txt)
+* Each menu contains various problem solving methods
+* Each function contains multiple error handling method to ensure greatest experience for the user.
 
-## Learn More
+## File Structures(Beneri)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+This repo contains of 4 folders such as :
+- bin : contains of java executable file .class that has been compiled from the src folder
+- src : contains of main program source code .java 
+- doc : contain of our assignment report
+- test : contains of study cases problems that can be used as an input in the program.
+- output : contains of output .txt file based on users  
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## About
 
-### Code Splitting
+Hello there, 
+if you curious about our other project you can check our github by click the link below
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [@ChaiGans](https://github.com/ChaiGans)
+- [@FarelW](https://github.com/FarelW)
+- [@Bodleh](https://github.com/Bodleh)
