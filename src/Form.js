@@ -17,7 +17,7 @@ class Form extends Component {
         e.preventDefault();
         const { name, email } = this.state;
         try {
-            const response = await fetch("https://algeo02-22045.vercel.app/api/bio", {
+            const response = await fetch("http://localhost:8080/api/bio", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
