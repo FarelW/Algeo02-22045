@@ -20,7 +20,7 @@ func main ()  {
 	bios:=[]Biodata{}
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:3000",
+		AllowOrigins: "https://algeo02-22045.vercel.app/",
 		AllowHeaders: "Origin,Content-Type,Accept",
 	}))
 
