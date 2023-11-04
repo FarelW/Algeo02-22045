@@ -1,4 +1,5 @@
 import React from "react";
+import { BsFillRocketTakeoffFill } from "react-icons/bs";
 
 const Header = () => {
     return (
@@ -33,7 +34,8 @@ const Header = () => {
           </div>
         </div>
         <div className="flex justify-center w-[20%]">
-          <div className="flex border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-black hover:border-black hover:text-white transition-all duration-300">
+          <div className="flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-black hover:border-black hover:text-white transition-all duration-300">
+            <BsFillRocketTakeoffFill className="hover:text-white"></BsFillRocketTakeoffFill>
             Launch App
           </div>
         </div>

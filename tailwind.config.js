@@ -11,18 +11,20 @@ module.exports = {
         aenonikregular: ["aenonik-regular", "sans-serif"],
         aenonikregularitalic: ["aenonik-regular-italic", "sans-serif"],
       },
-      animation: {
-        typing: "typing 4s steps(40, end), blinkCursor .75s step-end infinite",
-      },
       keyframes: {
-        typing: {
-          from: { width: "0" },
-          to: { width: "100%" },
+        spin_words: {
+          "10%": { transform: "translateY(-112%)" },
+          "25%": { transform: "translateY(-100%)" },
+          "35%": { transform: "translateY(-212%)" },
+          "50%": { transform: "translateY(-200%)" },
+          "60%": { transform: "translateY(-312%)" },
+          "75%": { transform: "translateY(-300%)" },
+          "85%": { transform: "translateY(-412%)" },
+          "100%": { transform: "translateY(-400%)" },
         },
-        blinkCursor: {
-          "from, to": { "border-right-color": "transparent" },
-          "50%": { "border-right-color": "black" },
-        },
+      },
+      animation: {
+        spin_words: "spin_words 6s ease-in-out infinite",
       },
     },
   },
