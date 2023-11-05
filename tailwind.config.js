@@ -13,18 +13,16 @@ module.exports = {
       },
       keyframes: {
         spin_words: {
-          "10%": { transform: "translateY(-112%)" },
-          "25%": { transform: "translateY(-100%)" },
-          "35%": { transform: "translateY(-212%)" },
-          "50%": { transform: "translateY(-200%)" },
-          "60%": { transform: "translateY(-312%)" },
-          "75%": { transform: "translateY(-300%)" },
-          "85%": { transform: "translateY(-412%)" },
-          "100%": { transform: "translateY(-400%)" },
+          "0%, 16.666%": { transform: "translateY(0)" }, // 1st word and reset
+          "16.666%, 33.333%": { transform: "translateY(-100%)" }, // 2nd word
+          "33.333%, 50%": { transform: "translateY(-200%)" }, // 3rd word
+          "50%, 66.666%": { transform: "translateY(-300%)" }, // 4th word
+          "66.666%, 83.3333%": { transform: "translateY(-400%)" }, // 5th word and prepare to loop back to 1st
+          "83.3333%, 100%": { transform: "translateY(0%)" }, // 5th word and prepare to loop back to 1st
         },
       },
       animation: {
-        spin_words: "spin_words 6s ease-in-out infinite",
+        spin_words: "spin_words 8s ease-in-out infinite",
       },
     },
   },
