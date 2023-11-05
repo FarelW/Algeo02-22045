@@ -61,12 +61,3 @@
 	font-style: normal;
 }
 
-@keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
-}
-
-@keyframes blinkCursor {
-  from { border-right-color: transparent; }
-  to { border-right-color: black; }
-}
