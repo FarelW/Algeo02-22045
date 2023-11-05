@@ -21,7 +21,7 @@ const Header = () => {
               to="/guides"
               className={`after:bg-white after:absolute after:h-[2.5px] ${isActive('/guides') ? 'after:w-full' : 'after:w-0'} after:bottom-[-6px] after:left-0 hover:after:w-full after:transition-all after:duration-300`}
             >
-              Guides
+              Guides  
             </Link>
           </div>
           <div className="relative">
