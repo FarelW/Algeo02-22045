@@ -8,7 +8,7 @@ function Home() {
         <img
           src="backgroundCamera.jpg"
           alt="Background"
-          className="absolute inset-0 object-cover w-full h-full"
+          className="fixed inset-0 object-cover w-full h-full"
         />
         <div className="bg-black bg-opacity-60 absolute inset-0"></div>
         <div className="relative z-[2] pt-32 flex items-end text-white flex-col px-12">
