@@ -123,17 +123,17 @@ func CHE(matrix [256][256]float32)Vector{
     return vektor
 }
 
-func TextureProcessing() {
+func TextureProcessing(thefile string) Vector {
     var occ [256][256]float32
 
+    var thevector Vector
 
-
-    var imageFile string= "../../public/backgroundCamera.jpg"
+    var imageFile string= thefile
 
     img, err := loadImage(imageFile)
     if err != nil {
         fmt.Println("Error loading the image:", err)
-        return
+        return thevector
     }
 
     imgTexture := getTextureValues(img)
@@ -165,9 +165,8 @@ func TextureProcessing() {
 	// 	fmt.Println()
 	// }
 
-    var thevector Vector
-
     thevector = CHE(occ)
-    fmt.Println()
-    fmt.Printf("Vector : [%.2f, %.2f, %.2f]\n",thevector.C,thevector.H,thevector.E)
+    // fmt.Println()
+    // fmt.Printf("Vector : [%.2f, %.2f, %.2f]\n",thevector.C,thevector.H,thevector.E)
+    return thevector
 }
