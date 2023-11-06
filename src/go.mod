@@ -2,9 +2,10 @@ module github.com/FarelW/Algeo02-22045
 
 go 1.21.3
 
+require github.com/gofiber/fiber/v2 v2.50.0
+
 require (
 	github.com/andybalholm/brotli v1.0.6 // indirect
-	github.com/gofiber/fiber/v2 v2.50.0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
