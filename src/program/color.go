@@ -99,9 +99,9 @@ func getNormalizedRGBValues(img image.Image) ImageRGB {
         PixelRGBMatrix[y] = make([]PixelRGB, width)
         for x := bounds.Min.X; x < bounds.Max.X; x++ {
             r, g, b, _ := img.At(x, y).RGBA()
-            rNorm := float32(r>>8) / 255.0
-            gNorm := float32(g>>8) / 255.0
-            bNorm := float32(b>>8) / 255.0
+            rNorm := float32(r) / 255.0
+            gNorm := float32(g) / 255.0
+            bNorm := float32(b) / 255.0
             cmaxNorm := MaxC(rNorm, gNorm, bNorm)
             cminNorm := MinC(rNorm, gNorm, bNorm)
             PixelRGB := PixelRGB{
@@ -133,7 +133,6 @@ func convertRGBToHSVValues(imgRGB ImageRGB, imgHSV *ImageHSV) {
             pixelRGB := imgRGB.ValueRGB[i][j]
             cmax := pixelRGB.cmax
             delta := pixelRGB.delta
-            imgHSV.ValueHSV[i][j].V = cmax 
 
             if (delta == 0) {
                 imgHSV.ValueHSV[i][j].H = 0
@@ -151,7 +150,7 @@ func convertRGBToHSVValues(imgRGB ImageRGB, imgHSV *ImageHSV) {
                 imgHSV.ValueHSV[i][j].S = delta / cmax
             }
 
-            imgHSV.ValueHSV[i][j].H = cmax
+            imgHSV.ValueHSV[i][j].V = cmax 
         }
     }
 }
@@ -171,9 +170,9 @@ func initializeImageHSV(width, height int) ImageHSV {
 
 func divideHSVMatrixTo9Vectors (hsvMatrix ImageHSV, vector *[9][72]float32)  {
     rowLength := hsvMatrix.row
-    rowLengthBin := hsvMatrix.row/rowLength
+    rowLengthBin := hsvMatrix.row/3
     columnLength := hsvMatrix.col
-    columnLengthBin := hsvMatrix.col/columnLength
+    columnLengthBin := hsvMatrix.col/3
     topLeftPic := initializeImageHSV(columnLengthBin, rowLengthBin)
     middleLeftPic := initializeImageHSV(columnLengthBin, rowLengthBin)
     bottomLeftPic := initializeImageHSV(columnLengthBin, rowLength-2*rowLengthBin)
@@ -259,7 +258,7 @@ func arrayOfVectorCosineWeighting(vector1[9][72]float32, vector2[9][72]float32) 
     bottomLeftCosine := cosineSimilarity(vector1[6], vector2[6])
     bottomMiddleCosine := cosineSimilarity(vector1[7], vector2[7])
     bottomRightCosine := cosineSimilarity(vector1[8], vector2[8])
-    return (topLeftCosine + bottomLeftCosine + bottomRightCosine + topRightCosine + 2*topMiddleCosine + 2*bottomMiddleCosine + 2*middleLeftCosine + 2*middleRightCosine + 3*middleMiddleCosine)/15
+    return (topLeftCosine + bottomLeftCosine + bottomRightCosine + topRightCosine + 3*topMiddleCosine + 3*bottomMiddleCosine + 2*middleLeftCosine + 2*middleRightCosine + 5*middleMiddleCosine)/19
 }
 
 func normalizeHistogram(histogram []int, totalPixels int) []float32 {
@@ -295,7 +294,10 @@ func convertHSVToVector(imgHSV ImageHSV, vector *[72]float32) {
 			s := imgHSV.ValueHSV[i][j].S
 			v := imgHSV.ValueHSV[i][j].V
 
-	        indexH := int(h * 8) // Index for Hue bin
+            if (h < 0) {
+                h = h+360
+            }
+	        indexH := int(h / 8) // Index for Hue bin
             if indexH >= 8 {
                 indexH = 7 // Ensuring the index doesn't go out of bounds
             }   
@@ -335,8 +337,8 @@ func timer(name string) func() {
 
 func main() {
     defer timer("main")()  
-    imageFile1 := "../../img/994.jpg"
-    imageFile2 := "../../img/991.jpg"
+    imageFile1 := "../../img/Hitam.jpg"
+    imageFile2 := "../../img/Hitam.jpg"
     img1, err := loadImage(imageFile1)
     img2, err := loadImage(imageFile2)
     if err != nil {
