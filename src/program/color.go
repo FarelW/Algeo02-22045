@@ -41,6 +41,8 @@ func printMatrix(image ImageRGB) {
     }
 }
 
+
+
 func loadImage(filename string) (image.Image, error) {
     file, err := os.Open(filename)
     if err != nil {
@@ -124,14 +126,14 @@ func getNormalizedRGBValues(img image.Image) ImageRGB {
 func convertRGBToHSVValues(imgRGB ImageRGB, imgHSV *ImageHSV) {
     imgHSV.col = imgRGB.col 
     imgHSV.row = imgRGB.row
-    imgHSV.ValueHSV = make([][]PixelHSV, imgRGB.row) // Initialize the ValueHSV slice
+    imgHSV.ValueHSV = make([][]PixelHSV, imgRGB.row) 
     for i := 0; i < imgRGB.row; i++ {
         imgHSV.ValueHSV[i] = make([]PixelHSV, imgRGB.col)
         for j := 0; j < imgRGB.col; j++ {
             pixelRGB := imgRGB.ValueRGB[i][j]
             cmax := pixelRGB.cmax
             delta := pixelRGB.delta
-            imgHSV.ValueHSV[i][j].V = cmax // Value (V)
+            imgHSV.ValueHSV[i][j].V = cmax 
 
             if (delta == 0) {
                 imgHSV.ValueHSV[i][j].H = 0
@@ -154,6 +156,111 @@ func convertRGBToHSVValues(imgRGB ImageRGB, imgHSV *ImageHSV) {
     }
 }
 
+func initializeImageHSV(width, height int) ImageHSV {
+    valueHSV := make([][]PixelHSV, height)
+    for i := range valueHSV {
+        valueHSV[i] = make([]PixelHSV, width)
+    }
+
+    return ImageHSV{
+        ValueHSV: valueHSV,
+        col:      width,
+        row:      height,
+    }
+}
+
+func divideHSVMatrixTo9Vectors (hsvMatrix ImageHSV, vector *[9][72]float32)  {
+    rowLength := hsvMatrix.row
+    rowLengthBin := hsvMatrix.row/rowLength
+    columnLength := hsvMatrix.col
+    columnLengthBin := hsvMatrix.col/columnLength
+    topLeftPic := initializeImageHSV(columnLengthBin, rowLengthBin)
+    middleLeftPic := initializeImageHSV(columnLengthBin, rowLengthBin)
+    bottomLeftPic := initializeImageHSV(columnLengthBin, rowLength-2*rowLengthBin)
+    topMiddlePic := initializeImageHSV(columnLengthBin, rowLengthBin)
+    middleMiddlePic := initializeImageHSV(columnLengthBin, rowLengthBin)
+    bottomMiddlePic := initializeImageHSV(columnLengthBin, rowLength-2*rowLengthBin)
+    topRightPic := initializeImageHSV(columnLength-2*columnLengthBin, rowLengthBin)
+    middleRightPic := initializeImageHSV(columnLength-2*columnLengthBin, rowLengthBin)
+    bottomRightPic := initializeImageHSV(columnLength-2*columnLengthBin, rowLength-2*rowLengthBin)
+    var i,j int
+    // Top Left Pic
+    for i=0;i<rowLengthBin;i++ {
+        for j=0;j<columnLengthBin;j++ {
+            topLeftPic.ValueHSV[i][j] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Middle Left Pic
+    for i=rowLengthBin;i<2*rowLengthBin;i++ {
+        for j=0;j<columnLengthBin;j++ {
+            middleLeftPic.ValueHSV[i-rowLengthBin][j] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Bottom Left Pic
+    for i=2*rowLengthBin;i<rowLength;i++ {
+        for j=0;j<columnLengthBin;j++ {
+            bottomLeftPic.ValueHSV[i-2*rowLengthBin][j] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Top Middle Pic
+    for i=0;i<rowLengthBin;i++ {
+        for j=columnLengthBin;j<2*columnLengthBin;j++ {
+            topMiddlePic.ValueHSV[i][j-columnLengthBin] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Middle Middle Pic
+    for i=rowLengthBin;i<2*rowLengthBin;i++ {
+        for j=columnLengthBin;j<2*columnLengthBin;j++ {
+            middleMiddlePic.ValueHSV[i-rowLengthBin][j-columnLengthBin] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Bottom Middle Pic
+    for i=2*rowLengthBin;i<rowLength;i++ {
+        for j=columnLengthBin;j<2*columnLengthBin;j++ {
+            bottomMiddlePic.ValueHSV[i-2*rowLengthBin][j-columnLengthBin] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Top Right Pic
+    for i=0;i<rowLengthBin;i++ {
+        for j=2*columnLengthBin;j<columnLength;j++ {
+            topRightPic.ValueHSV[i][j-2*columnLengthBin] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Middle Right Pic
+    for i=rowLengthBin;i<2*rowLengthBin;i++ {
+        for j=2*columnLengthBin;j<columnLength;j++ {
+            middleRightPic.ValueHSV[i-rowLengthBin][j-2*columnLengthBin] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    // Bottom Right Pic
+    for i=2*rowLengthBin;i<rowLength;i++ {
+        for j=2*columnLengthBin;j<columnLength;j++ {
+            bottomRightPic.ValueHSV[i-2*rowLengthBin][j-2*columnLengthBin] = hsvMatrix.ValueHSV[i][j]
+        }
+    }
+    convertHSVToVector(topLeftPic, &vector[0])
+    convertHSVToVector(topMiddlePic, &vector[1])
+    convertHSVToVector(topRightPic, &vector[2])
+    convertHSVToVector(middleLeftPic, &vector[3])
+    convertHSVToVector(middleMiddlePic, &vector[4])
+    convertHSVToVector(middleRightPic, &vector[5])
+    convertHSVToVector(bottomLeftPic, &vector[6])
+    convertHSVToVector(bottomMiddlePic, &vector[7])
+    convertHSVToVector(bottomRightPic, &vector[8])
+}
+
+func arrayOfVectorCosineWeighting(vector1[9][72]float32, vector2[9][72]float32) float32{
+    topLeftCosine := cosineSimilarity(vector1[0], vector2[0])
+    topMiddleCosine := cosineSimilarity(vector1[1], vector2[1])
+    topRightCosine := cosineSimilarity(vector1[2], vector2[2])
+    middleLeftCosine := cosineSimilarity(vector1[3], vector2[3])
+    middleMiddleCosine := cosineSimilarity(vector1[4], vector2[4])
+    middleRightCosine := cosineSimilarity(vector1[5], vector2[5])
+    bottomLeftCosine := cosineSimilarity(vector1[6], vector2[6])
+    bottomMiddleCosine := cosineSimilarity(vector1[7], vector2[7])
+    bottomRightCosine := cosineSimilarity(vector1[8], vector2[8])
+    return (topLeftCosine + bottomLeftCosine + bottomRightCosine + topRightCosine + 2*topMiddleCosine + 2*bottomMiddleCosine + 2*middleLeftCosine + 2*middleRightCosine + 3*middleMiddleCosine)/15
+}
 
 func normalizeHistogram(histogram []int, totalPixels int) []float32 {
     normalizedHistogram := make([]float32, len(histogram))
@@ -209,7 +316,7 @@ func convertHSVToVector(imgHSV ImageHSV, vector *[72]float32) {
 	}
 } 
 
-func cosineSimilarity(vecA, vecB []float32) float32 {
+func cosineSimilarity(vecA, vecB [72]float32) float32 {
     var dotProduct, normA, normB float32
     for i, val := range vecA {
         dotProduct += val * vecB[i]
@@ -228,8 +335,8 @@ func timer(name string) func() {
 
 func main() {
     defer timer("main")()  
-    imageFile1 := "../../img/modalBackgroundType2.png"
-    imageFile2  := "../../img/kodoksad.jpg"
+    imageFile1 := "../../img/994.jpg"
+    imageFile2 := "../../img/991.jpg"
     img1, err := loadImage(imageFile1)
     img2, err := loadImage(imageFile2)
     if err != nil {
@@ -241,11 +348,11 @@ func main() {
     imgRGB2 := getNormalizedRGBValues(img2)
 	var imgHSV1 ImageHSV
 	var imgHSV2 ImageHSV
-    var vector1 [72]float32
-    var vector2 [72]float32
+    var vector1 [9][72]float32
+    var vector2 [9][72]float32
 	convertRGBToHSVValues(imgRGB1, &imgHSV1)
 	convertRGBToHSVValues(imgRGB2, &imgHSV2)
-    convertHSVToVector(imgHSV1, &vector1)
-    convertHSVToVector(imgHSV2, &vector2)
-    fmt.Printf("%.2f%%", 100*cosineSimilarity(vector1[:], vector2[:]))
+    divideHSVMatrixTo9Vectors(imgHSV1, &vector1)
+    divideHSVMatrixTo9Vectors(imgHSV2, &vector2)
+    fmt.Printf("%.2f%%", 100*arrayOfVectorCosineWeighting(vector1, vector2))
 }
