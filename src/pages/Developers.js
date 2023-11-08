@@ -1,11 +1,8 @@
 import React from "react";
-import Header from "../components/Header";
-
 
 function Developers() {
     return (
         <div className="min-w-screen min-h-screen flex flex-col">
-            <Header />
             <main className="flex-1 relative">
                 <img
                     src="backgroundCamera.jpg"
