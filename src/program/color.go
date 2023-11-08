@@ -1,0 +1,251 @@
+package main
+
+import (
+	"fmt"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
+	"math"
+	"os"
+	"time"
+)
+
+type PixelRGB struct {
+	R,G,B float32
+	cmax, cmin, delta float32
+	maxtype string
+}
+
+type ImageRGB struct {
+	ValueRGB [][] PixelRGB
+    col, row int
+}
+
+type PixelHSV struct {
+	H,S,V float32
+}
+
+type ImageHSV struct {
+	ValueHSV [][] PixelHSV
+	col, row int
+}
+
+func printMatrix(image ImageRGB) {
+    for y := 0; y < image.row; y++ {
+        for x := 0; x < image.col; x++ {
+            PixelRGB := image.ValueRGB[y][x]
+            fmt.Printf("PixelRGB at (%d, %d) - R: %.2f, G: %.2f, B:%.2f\n", x, y, PixelRGB.R, PixelRGB.G, PixelRGB.B)
+			fmt.Printf("PixelRGB at (%d, %d) - cmax: %.2f, cmin: %.2f\n", x, y, PixelRGB.cmax, PixelRGB.cmin)
+        }
+        fmt.Println()
+    }
+}
+
+func loadImage(filename string) (image.Image, error) {
+    file, err := os.Open(filename)
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        return nil, err
+    }
+
+    return img, nil
+}
+
+func MaxC(R,G,B float32) float32 {
+	if R>G {
+		if R>B {
+			return R
+		} else {
+			return B
+		}
+	} else {
+		if G>B {
+			return G
+		} else {
+			return B	
+		}
+	}
+}
+
+func MinC(R,G,B float32) float32 {
+	if R<G {
+		if R<B {
+			return R
+		} else {
+			return B
+		}
+	} else {
+		if G<B {
+			return G
+		} else {
+			return B	
+		}
+	}
+}
+
+func getNormalizedRGBValues(img image.Image) ImageRGB {
+    bounds := img.Bounds()
+    width, height := bounds.Max.X-bounds.Min.X, bounds.Max.Y-bounds.Min.Y
+    PixelRGBMatrix := make([][]PixelRGB, height)
+
+    for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+        PixelRGBMatrix[y] = make([]PixelRGB, width)
+        for x := bounds.Min.X; x < bounds.Max.X; x++ {
+            r, g, b, _ := img.At(x, y).RGBA()
+            rNorm := float32(r>>8) / 255.0
+            gNorm := float32(g>>8) / 255.0
+            bNorm := float32(b>>8) / 255.0
+            cmaxNorm := MaxC(rNorm, gNorm, bNorm)
+            cminNorm := MinC(rNorm, gNorm, bNorm)
+            PixelRGB := PixelRGB{
+                R:    rNorm,
+                G:    gNorm,
+                B:    bNorm,
+                cmax: cmaxNorm,
+                cmin: cminNorm,
+                delta: cmaxNorm - cminNorm,
+            }
+            PixelRGBMatrix[y][x] = PixelRGB
+        }
+    }
+
+    return ImageRGB{
+        ValueRGB: PixelRGBMatrix,
+        col:      width,
+        row:      height,
+    }
+}
+
+func convertRGBToHSVValues(imgRGB ImageRGB, imgHSV *ImageHSV) {
+    imgHSV.col = imgRGB.col 
+    imgHSV.row = imgRGB.row
+    imgHSV.ValueHSV = make([][]PixelHSV, imgRGB.row) // Initialize the ValueHSV slice
+    for i := 0; i < imgRGB.row; i++ {
+        imgHSV.ValueHSV[i] = make([]PixelHSV, imgRGB.col)
+        for j := 0; j < imgRGB.col; j++ {
+            pixelRGB := imgRGB.ValueRGB[i][j]
+            cmax := pixelRGB.cmax
+            delta := pixelRGB.delta
+            imgHSV.ValueHSV[i][j].V = cmax // Value (V)
+
+            if (delta == 0) {
+                imgHSV.ValueHSV[i][j].H = 0
+            } else if (cmax == pixelRGB.R) {
+                imgHSV.ValueHSV[i][j].H = float32(60 * math.Mod(float64((pixelRGB.G-pixelRGB.B)/delta), 6))
+            } else if (cmax == pixelRGB.G) {
+                imgHSV.ValueHSV[i][j].H = 60*((pixelRGB.B-pixelRGB.R)/delta + 2)
+            } else if (cmax == pixelRGB.B) {
+                imgHSV.ValueHSV[i][j].H = 60*((pixelRGB.R-pixelRGB.G)/delta + 4)
+            }
+
+            if (cmax == 0) {
+                imgHSV.ValueHSV[i][j].S = 0 
+            } else {
+                imgHSV.ValueHSV[i][j].S = delta / cmax
+            }
+
+            imgHSV.ValueHSV[i][j].H = cmax
+        }
+    }
+}
+
+
+func normalizeHistogram(histogram []int, totalPixels int) []float32 {
+    normalizedHistogram := make([]float32, len(histogram))
+    for i, freq := range histogram {
+        normalizedHistogram[i] = float32(freq) / float32(totalPixels)
+    }
+    return normalizedHistogram
+}
+
+func printHistogram(histogram []float32, title string) {
+    fmt.Println(title)
+    for i, value := range histogram {
+        fmt.Printf("Bin %d: %f\n", i, value)
+    }
+}
+
+func printHSVMatrix(image ImageHSV) {
+    for y := 0; y < len(image.ValueHSV); y++ {
+        for x := 0; x < len(image.ValueHSV[y]); x++ {
+            pixelHSV := image.ValueHSV[y][x]
+            fmt.Printf("PixelHSV at (%d, %d) - H: %.2f, S: %.2f, V:%.2f\n", x, y, pixelHSV.H, pixelHSV.S, pixelHSV.V)
+        }
+        fmt.Println()
+    }
+}
+
+func convertHSVToVector(imgHSV ImageHSV, vector *[72]float32) {
+
+	for i := range imgHSV.ValueHSV {
+		for j := range imgHSV.ValueHSV[i] {
+			h := imgHSV.ValueHSV[i][j].H
+			s := imgHSV.ValueHSV[i][j].S
+			v := imgHSV.ValueHSV[i][j].V
+
+	        indexH := int(h * 8) // Index for Hue bin
+            if indexH >= 8 {
+                indexH = 7 // Ensuring the index doesn't go out of bounds
+            }   
+
+            indexS := int(s * 3) // Index for Saturation bin
+            if indexS >= 3 {
+                indexS = 2 // Ensuring the index doesn't go out of bounds
+            }
+
+            indexV := int(v * 3) // Index for Value bin
+            if indexV >= 3 {
+                indexV = 2 // Ensuring the index doesn't go out of bounds
+            }
+
+            index := (indexH * 3 * 3) + (indexS * 3) + indexV
+            vector[index]++
+		}
+	}
+} 
+
+func cosineSimilarity(vecA, vecB []float32) float32 {
+    var dotProduct, normA, normB float32
+    for i, val := range vecA {
+        dotProduct += val * vecB[i]
+        normA += val * val
+        normB += vecB[i] * vecB[i]
+    }
+    return dotProduct / (float32(math.Sqrt(float64(normA))) * float32(math.Sqrt(float64(normB))))
+}
+
+func timer(name string) func() {
+    start := time.Now()
+    return func() {
+        fmt.Printf("%s took %v\n", name, time.Since(start))
+    }
+}
+
+func main() {
+    defer timer("main")()  
+    imageFile1 := "../../img/modalBackgroundType2.png"
+    imageFile2  := "../../img/kodoksad.jpg"
+    img1, err := loadImage(imageFile1)
+    img2, err := loadImage(imageFile2)
+    if err != nil {
+        fmt.Println("Error loading the image:", err)
+        return
+    }
+
+    imgRGB1 := getNormalizedRGBValues(img1)
+    imgRGB2 := getNormalizedRGBValues(img2)
+	var imgHSV1 ImageHSV
+	var imgHSV2 ImageHSV
+    var vector1 [72]float32
+    var vector2 [72]float32
+	convertRGBToHSVValues(imgRGB1, &imgHSV1)
+	convertRGBToHSVValues(imgRGB2, &imgHSV2)
+    convertHSVToVector(imgHSV1, &vector1)
+    convertHSVToVector(imgHSV2, &vector2)
+    fmt.Printf("%.2f%%", 100*cosineSimilarity(vector1[:], vector2[:]))
+}
