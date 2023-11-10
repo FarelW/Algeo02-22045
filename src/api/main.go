@@ -1,30 +1,24 @@
 package main
 
 import (
-	// "fmt"
-	// "os"
-	"archive/zip"
 	"bytes"
 	"encoding/base64"
-	// "io"
+	"image"
 	"log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"path/filepath"
 	texture "github.com/FarelW/Algeo02-22045/program"
-	image "github.com/FarelW/Algeo02-22045/program"
+	color "github.com/FarelW/Algeo02-22045/program"
 )
 
-type Uploaded struct {
-    FileName string `json:"fileName"`
-	RGBValue image.Pixel `json:"RGBValue"`
-    TextureValue texture.Vector `json:"TextureValue"`
-	ImagePath string `json:"imagePath"`
+
+type FileData struct {
+    Base64     string  `json:"base64"`
+    Similarity float32 `json:"similarity"`
 }
 
-func main ()  {
-	// app := fiber.New()
 
+func main ()  {
 	app := fiber.New(fiber.Config{
 		BodyLimit: 2 * 1024 * 1024 * 1024, 
 	})
@@ -40,10 +34,23 @@ func main ()  {
 
 	app.Post("/api/upload", func(c *fiber.Ctx) error {
 		log.Println("Upload endpoint hit")
-	
-		response := make(map[string]string)
-	
-		// Handle Image File Upload
+		
+		proccesstype := c.FormValue("proccesstype")
+		if proccesstype == "" {
+			log.Printf("Error detecting process type: not provided\n")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Process type not found"})
+		}
+
+		var isColor bool
+		if proccesstype == "true" {
+			isColor = true
+		} else if proccesstype == "false" {
+			isColor = false
+		} else {
+			log.Printf("Error: Invalid process type value\n")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid process type"})
+		}
+
 		imageFileHeader, err := c.FormFile("imageFile")
 		if err != nil {
 			log.Printf("Error retrieving the image file: %v\n", err)
@@ -59,45 +66,89 @@ func main ()  {
 	
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(imageFile)
-		response["imageFile"] = base64.StdEncoding.EncodeToString(buf.Bytes())
+		// var temp string= base64.StdEncoding.EncodeToString(buf.Bytes())
+
+		img, _, err := image.Decode(buf)
+		if err != nil {
+			log.Printf("Error decoding the image: %v\n", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "error decoding image"})
+		}
+
+		response := fiber.Map{}
+		var textureVector texture.VectorCHE
+		var colorVector [9][72] float32
+
+		if isColor {
+			colorVector = color.ColorProcessing(img)
+			// response = fiber.Map{
+			// 	"imageFile": temp,
+			// 	"textureVector": colorVector,
+			// }
+		} else {
+			textureVector = texture.TextureProcessing(img)
+			// log.Println("ini\n",base64.StdEncoding.EncodeToString(buf.Bytes()))
+
+			// response = fiber.Map{
+			// 	"imageFile": temp,
+			// 	"textureVector": textureVector,
+			// }
+		}
+
+		// log.Printf("%s\n",response["imageFile"])
 		log.Println("Image file processed")
 	
-		// Handle ZIP File Upload
-		zipFileHeader, err := c.FormFile("zipFile")
+		// Handle multiple dataset files upload
+		form, err := c.MultipartForm()
 		if err != nil {
-			log.Printf("Error retrieving the ZIP file: %v\n", err)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "zip file not found"})
+			log.Printf("Error retrieving multipart form: %v\n", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "error retrieving files"})
 		}
-	
-		zipFile, err := zipFileHeader.Open()
-		if err != nil {
-			log.Printf("Error opening the ZIP file: %v\n", err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "error opening zip file"})
-		}
-		defer zipFile.Close()
-	
-		zipReader, err := zip.NewReader(zipFile, zipFileHeader.Size)
-		if err != nil {
-			log.Printf("Error reading the ZIP file: %v\n", err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "error reading zip file"})
-		}
-	
-		for _, file := range zipReader.File {
-			if filepath.Ext(file.Name) == ".png" || filepath.Ext(file.Name) == ".jpg" {
-				// log.Printf("Opening %s", file.Name)
-				f, err := file.Open()
-				if err != nil {
-					log.Printf("Error opening file inside the ZIP: %s, %v\n", file.Name, err)
-					continue
-				}
-	
-				buf := new(bytes.Buffer)
-				buf.ReadFrom(f)
-				f.Close()
-	
-				response[file.Name] = base64.StdEncoding.EncodeToString(buf.Bytes())
-				// log.Printf("Processed file from ZIP: %s\n", file.Name)
+
+		files := form.File["selectedFiles"]
+		for _, fileHeader := range files {
+			file, err := fileHeader.Open()
+			if err != nil {
+				log.Printf("Error opening file: %v\n", err)
+				continue // Skip files that can't be opened
 			}
+			defer file.Close()
+
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(file)
+			var halo string=fileHeader.Filename
+			var temp string= base64.StdEncoding.EncodeToString(buf.Bytes())
+
+			img, _, err := image.Decode(buf)
+			if err != nil {
+				log.Printf("Error decoding the image: %v\n", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "error decoding image"})
+			}
+
+			fileData := fiber.Map{}
+
+			if isColor {
+				var compareData [9][72]float32 = color.ColorProcessing(img)
+				var sim float32 = color.ArrayOfVectorCosineWeighting(colorVector, compareData)
+	
+				log.Println(halo,textureVector,compareData)
+	
+				fileData = fiber.Map{
+					"base64": temp,
+					"Similarity": sim,
+				}
+			} else {
+				var compareData texture.VectorCHE = texture.TextureProcessing(img)
+				var sim float32 = texture.TextureSimilarity(textureVector,compareData)
+	
+				// log.Println(halo,textureVector,compareData)
+	
+				fileData = fiber.Map{
+					"base64": temp,
+					"Similarity": sim,
+				}
+			}
+
+			response[fileHeader.Filename] = fileData
 		}
 	
 		log.Println("Sending response")
