@@ -1,4 +1,4 @@
-package main
+package program
 
 import (
 	"fmt"
@@ -40,8 +40,6 @@ func printMatrix(image ImageRGB) {
         fmt.Println()
     }
 }
-
-
 
 func loadImage(filename string) (image.Image, error) {
     file, err := os.Open(filename)
@@ -248,7 +246,7 @@ func divideHSVMatrixTo9Vectors (hsvMatrix ImageHSV, vector *[9][72]float32)  {
     convertHSVToVector(bottomRightPic, &vector[8])
 }
 
-func arrayOfVectorCosineWeighting(vector1[9][72]float32, vector2[9][72]float32) float32{
+func ArrayOfVectorCosineWeighting(vector1[9][72]float32, vector2[9][72]float32) float32{
     topLeftCosine := cosineSimilarity(vector1[0], vector2[0])
     topMiddleCosine := cosineSimilarity(vector1[1], vector2[1])
     topRightCosine := cosineSimilarity(vector1[2], vector2[2])
@@ -337,8 +335,8 @@ func timer(name string) func() {
 
 func main() {
     defer timer("main")()  
-    imageFile1 := "../../img/Hitam.jpg"
-    imageFile2 := "../../img/Hitam.jpg"
+    imageFile1 := "../../img/tes2_0.png"
+    imageFile2 := "../../img/Winter_0.png"
     img1, err := loadImage(imageFile1)
     img2, err := loadImage(imageFile2)
     if err != nil {
@@ -356,5 +354,15 @@ func main() {
 	convertRGBToHSVValues(imgRGB2, &imgHSV2)
     divideHSVMatrixTo9Vectors(imgHSV1, &vector1)
     divideHSVMatrixTo9Vectors(imgHSV2, &vector2)
-    fmt.Printf("%.2f%%", 100*arrayOfVectorCosineWeighting(vector1, vector2))
+    fmt.Printf("%.2f%%", 100*ArrayOfVectorCosineWeighting(vector1, vector2))
+}
+
+func ColorProcessing(img image.Image) [9][72]float32 {
+    imgRGB :=getNormalizedRGBValues(img)
+    var imgHSV ImageHSV
+    var vector [9][72]float32
+    convertRGBToHSVValues(imgRGB, &imgHSV)
+    divideHSVMatrixTo9Vectors(imgHSV, &vector)
+
+    return vector
 }
