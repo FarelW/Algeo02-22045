@@ -1,12 +1,14 @@
 package program
 
 import (
-    "fmt"
+    // "fmt"
     "image"
-    "os"
-    _ "image/jpeg"
-    _ "image/png"
+    // "os"
+    // "image/jpeg"
+    // "image/png"
+    // "log"
     "math"
+    // "image/color"
 )
 
 type TexturePixel struct {
@@ -18,38 +20,11 @@ type ImageTexture struct {
     col, row int
 }
 
-type Vector struct {
+type VectorCHE struct {
     C float32
     H float32
     E float32
 }
-
-func printMatrix(image ImageTexture) {
-    for y := 0; y < image.row; y++ {
-        for x := 0; x < image.col; x++ {
-            pixel := image.Value[y][x]
-            // fmt.Printf("Pixel at (%d, %d) - R: %.2f, G: %.2f, B: %.2f\n", x, y, pixel.R,pixel.G,pixel.B)
-            fmt.Printf("Pixel at (%d, %d) - Y: %d\n", x, y, pixel.Y)
-        }
-        fmt.Println()
-    }
-}
-
-func loadImage(filename string) (image.Image, error) {
-    file, err := os.Open(filename)
-    if err != nil {
-        return nil, err
-    }
-    defer file.Close()
-
-    img, _, err := image.Decode(file)
-    if err != nil {
-        return nil, err
-    }
-
-    return img, nil
-}
-
 func getTextureValues(img image.Image) ImageTexture {
     bounds := img.Bounds()
     width, height := bounds.Max.X-bounds.Min.X, bounds.Max.Y-bounds.Min.Y
@@ -99,12 +74,12 @@ func occurence(pixel ImageTexture)[256][256]float32{
     return matriks
 }
 
-func CHE(matrix [256][256]float32)Vector{
+func CHE(matrix [256][256]float32)VectorCHE{
     var totalC float32 =0
     var totalH float32 =0
     var totalE float32 =0
 
-    var vektor Vector
+    var vektor VectorCHE
 
     for i := 0; i < len(matrix); i++ {
         for j := 0; j < len(matrix[i]); j++ {
@@ -123,50 +98,33 @@ func CHE(matrix [256][256]float32)Vector{
     return vektor
 }
 
-func TextureProcessing(thefile string) Vector {
+func TextureProcessing(img image.Image) VectorCHE {
     var occ [256][256]float32
 
-    var thevector Vector
+    var thevector VectorCHE
 
-    var imageFile string= thefile
+    // var imageFile string= thefile
 
-    img, err := loadImage(imageFile)
-    if err != nil {
-        fmt.Println("Error loading the image:", err)
-        return thevector
-    }
+    // img, err := loadImage(imageFile)
+    // if err != nil {
+    //     fmt.Println("Error loading the image:", err)
+    //     return thevector
+    // }
 
     imgTexture := getTextureValues(img)
-
-	// imgTexture := ImageTexture{
-	// 	Value: [][]TexturePixel{
-	// 		{{Y: 0.0}, {Y: 0.0}, {Y: 1.0}},
-	// 		{{Y: 1.0}, {Y: 2.0}, {Y: 3.0}},
-	// 		{{Y: 2.0}, {Y: 3.0}, {Y: 2.0}},
-	// 	},
-	// 	col: 3,
-	// 	row: 3,
-	// }
-
-	// for _, row := range imgTexture.Value {
-	// 	for _, pixel := range row {
-	// 		fmt.Printf("%d ", pixel.Y)
-	// 	}
-	// 	fmt.Println()
-	// }
-    // fmt.Println()
-
     occ= occurence(imgTexture)
-    // n := len(occ)
-	// for i := 0; i < n; i++ {
-	// 	for j := 0; j < n; j++ {
-	// 		fmt.Printf("%f ", occ[i][j])
-	// 	}
-	// 	fmt.Println()
-	// }
-
     thevector = CHE(occ)
-    // fmt.Println()
-    // fmt.Printf("Vector : [%.2f, %.2f, %.2f]\n",thevector.C,thevector.H,thevector.E)
+
     return thevector
+}
+
+func TextureSimilarity(vector1,vector2 VectorCHE) float32{
+
+    var dotProduct float32 = vector1.C*vector2.C + vector1.H*vector2.H + vector1.E*vector2.E
+    var lengthproduct1 float32 = float32(math.Sqrt(float64(vector1.C*vector1.C+vector1.H*vector1.H + vector1.E*vector1.E)))
+    var lengthproduct2 float32 = float32(math.Sqrt(float64(vector2.C*vector2.C+vector2.H*vector2.H + vector2.E*vector2.E)))
+
+    var cos float32 = dotProduct/(lengthproduct1*lengthproduct2)
+
+    return cos
 }
