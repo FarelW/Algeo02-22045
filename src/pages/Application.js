@@ -43,16 +43,19 @@ const dummyData = [
   { imageResult: "modalBackgroundType4.png", similarity: "10" },
 ];
 
+const BATCH_SIZE = 100;
 
 const Application = () => {
   // data yang bisa diambil adalah imageFile dan dataset untuk dipass ke backend
-  const [image, setImage] = React.useState(null); //base64-encoded string
+  const [imageFile, setImageFile] = React.useState(null); //base64-encoded string
   const [selectedFiles, setSelectedFiles] = React.useState([]); // array of file
   const [fileName, setFileName] = React.useState(null); // just to print filename, igonre it for backend
   // isColor===true berarti pemrosesan dilakukan dengan metode Colors, sedangkan isColor===false pemrosesan dilakukan dengan metode Texture
+  const [imageBase64, setImageBase64] = React.useState(null); 
   const [isColor, setisColor] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
 
+  const maxFileSize = 4 * 1024 * 1024 * 1024;
   const toggleSwitch = () => setisColor(!isColor);
 
   const handleFilesAdded = (newFiles) => {
@@ -60,17 +63,21 @@ const Application = () => {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    const formData = new FormData();
-    formData.append("proccesstype", isColor);
-    formData.append("image", image); // Append the base64 image data
-    for (let i = 0; i < selectedFiles.length; i++) {
-      formData.append("selectedFiles[]", selectedFiles[i]);
+
+    if (!imageFile || selectedFiles.length === 0) {
+      alert('Please select both an image file and dataset files.');
+      return;
+    }
+
+    for (let i = 0; i < selectedFiles.length; i += BATCH_SIZE) {
+      const batch = selectedFiles.slice(i, i + BATCH_SIZE);
+      handleSubmitBatch(batch);
     }
 
     // Pake tiga ini buat di post ke backend ya ler
-    console.log(formData.get("proccesstype")); // Log the "proccesstype" value (true maka color processing, false maka texture)
-    console.log(formData.get("image")); // Log the "image" value (base-64 string)
-    console.log(formData.getAll("selectedFiles[]")); // Log array of selectedFiles
+    // console.log(formData.get("proccesstype")); // Log the "proccesstype" value (true maka color processing, false maka texture)
+    // console.log(formData.get("image")); // Log the "image" value (base-64 string)
+    // console.log(formData.getAll("selectedFiles[]")); // Log array of selectedFiles
 
     // // Perform the POST request to the server here using fetch or an HTTP client library
     // // Example using fetch:
@@ -91,14 +98,17 @@ const Application = () => {
 
   function handleFileChange(event) {
     const file = event.target.files[0];
-    if (file) {
+    if (file && file.type.match('image.*') && file.size <= maxFileSize) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         // Update the state immediately when the file is loaded
-        setImage(e.target.result);
+        setImageBase64(e.target.result);
         setFileName(file.name);
       };
       reader.readAsDataURL(file);
+    } else {
+      alert('Please upload a valid image file.');
     }
   }
 
@@ -108,21 +118,53 @@ const Application = () => {
     setToast({ message, type });
   };
 
+  const handleSubmitBatch = async (batch) => {
+    const formData = new FormData();
+    batch.forEach(file => formData.append('selectedFiles', file));
+
+    formData.append("imageFile", imageFile);
+    formData.append("proccesstype", isColor);
+    console.log(isColor)
+
+    // Upload the batch
+    try {
+      const response = await fetch("http://localhost:8080/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Batch uploaded successfully", data);
+      } else {
+        console.error("Batch upload failed", response.status);
+      }
+    } catch (error) {
+      console.error("Error during batch upload:", error);
+    }
+  };
+
   const handleMultipleUploadChange = (event) => {
-    const files = event.target.files;
+    const files = Array.from(event.target.files);
     if (files.length > 0) {
       const validImageExtensions = ["jpg", "jpeg", "png"];
       const selectedImages = [];
+      let totalSize = 0;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileExtension = file.name.split(".").pop().toLowerCase();
 
         if (validImageExtensions.includes(fileExtension)) {
-          selectedImages.push(file);
+          totalSize += file.size;
+          if (totalSize <= maxFileSize) {
+              selectedImages.push(file);
+          } else {
+              alert('The total size of the selected images exceeds the limit.');
+              break;
+          }
         } else {
-          // You can handle invalid file types here if needed.
-          console.log(`Invalid file: ${file.name}`);
+            console.log(`Invalid file type: ${file.name}`);
         }
       }
 
@@ -204,18 +246,18 @@ const Application = () => {
                 <button
                   type="button"
                   className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
-                  onClick={() => document.getElementById("getFile").click()}
+                  onClick={() => document.getElementById("imageFile").click()}
                 >
                   Insert an Image
                 </button>
                 <input
                   type="file"
-                  id="getFile"
+                  id="imageFile"
                   onChange={handleFileChange}
                   className="hidden"
                   accept="image/*"
                 />
-                {image ? (
+                {imageFile ? (
                   <p className="text-white font-aenoniklight text-[15px] text-center">
                     {fileName}
                   </p>
@@ -228,12 +270,12 @@ const Application = () => {
 
               <div
                 className={`relative w-auto max-h-[300px] ${
-                  image ? "" : "min-h-[300px]"
+                  imageFile ? "" : "min-h-[300px]"
                 } border-white border`}
               >
-                {image && (
+                {imageBase64 && (
                   <img
-                    src={image}
+                    src={imageBase64}
                     alt="Uploaded"
                     className="max-h-[298px] mx-auto"
                   />
