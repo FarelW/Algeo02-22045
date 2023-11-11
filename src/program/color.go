@@ -65,10 +65,9 @@ func getNormalizedRGBValues(img image.Image) ImageRGB {
         PixelRGBMatrix[y] = make([]PixelRGB, width)
         for x := 0; x < width; x++ {
             r, g, b, _ := img.At(x+bounds.Min.X, y+bounds.Min.Y).RGBA()
-            // fmt.Printf("%d %d %d\n", r, g, b)
-            rNorm := float32(r) / 65535.0
-            gNorm := float32(g) / 65535.0
-            bNorm := float32(b) / 65535.0
+            rNorm := float32(r >> 8) / 255.0
+            gNorm := float32(g >> 8) / 255.0
+            bNorm := float32(b >> 8) / 255.0
             cmaxNorm := rNorm
             if gNorm > cmaxNorm {
                 cmaxNorm = gNorm
@@ -343,8 +342,8 @@ func timer(name string) func() {
 
 func main() {
     defer timer("main")()  
-    imageFile1 := "../../img/tes2_0.png"
-    imageFile2 := "../../img/Winter_0.png"
+    imageFile1 := "../../img/beda1.png"
+    imageFile2 := "../../img/beda2.png"
     img1, err := loadImage(imageFile1)
     img2, err := loadImage(imageFile2)
     if err != nil {
