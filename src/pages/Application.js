@@ -7,51 +7,17 @@ import {
   MdOutlineArrowForwardIos,
 } from "react-icons/md";
 
-const dummyData = [
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "kodoksad.jpg", similarity: "20" },
-  { imageResult: "react.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "modalBackgroundType4.png", similarity: "20" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "modalBackgroundType4.png", similarity: "20" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "modalBackgroundType4.png", similarity: "20" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "modalBackgroundType4.png", similarity: "20" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "modalBackgroundType4.png", similarity: "20" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "modalBackgroundType4.png", similarity: "20" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "40" },
-  { imageResult: "modalBackgroundType4.png", similarity: "30" },
-  { imageResult: "modalBackgroundType4.png", similarity: "20" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-  { imageResult: "modalBackgroundType4.png", similarity: "10" },
-];
-
 const BATCH_SIZE = 100;
 
 const Application = () => {
+  const [dummyData, setDummyData] = React.useState([]);
+  console.log(dummyData);
   // data yang bisa diambil adalah imageFile dan dataset untuk dipass ke backend
   const [imageFile, setImageFile] = React.useState(null); //base64-encoded string
   const [selectedFiles, setSelectedFiles] = React.useState([]); // array of file
   const [fileName, setFileName] = React.useState(null); // just to print filename, igonre it for backend
   // isColor===true berarti pemrosesan dilakukan dengan metode Colors, sedangkan isColor===false pemrosesan dilakukan dengan metode Texture
-  const [imageBase64, setImageBase64] = React.useState(null); 
+  const [imageBase64, setImageBase64] = React.useState(null);
   const [isColor, setisColor] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -65,7 +31,7 @@ const Application = () => {
     event.preventDefault();
 
     if (!imageFile || selectedFiles.length === 0) {
-      alert('Please select both an image file and dataset files.');
+      alert("Please select both an image file and dataset files.");
       return;
     }
 
@@ -78,27 +44,11 @@ const Application = () => {
     // console.log(formData.get("proccesstype")); // Log the "proccesstype" value (true maka color processing, false maka texture)
     // console.log(formData.get("image")); // Log the "image" value (base-64 string)
     // console.log(formData.getAll("selectedFiles[]")); // Log array of selectedFiles
-
-    // // Perform the POST request to the server here using fetch or an HTTP client library
-    // // Example using fetch:
-    // fetch("your-server-endpoint", {
-    //   method: "POST",
-    //   body: formData,
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     // Handle the server response here
-    //     console.log("Server response:", data);
-    //   })
-    //   .catch((error) => {
-    //     // Handle any errors that occur during the POST request
-    //     console.error("Error:", error);
-    //   });
   };
 
   function handleFileChange(event) {
     const file = event.target.files[0];
-    if (file && file.type.match('image.*') && file.size <= maxFileSize) {
+    if (file && file.type.match("image.*") && file.size <= maxFileSize) {
       setImageFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -108,7 +58,7 @@ const Application = () => {
       };
       reader.readAsDataURL(file);
     } else {
-      alert('Please upload a valid image file.');
+      alert("Please upload a valid image file.");
     }
   }
 
@@ -120,11 +70,11 @@ const Application = () => {
 
   const handleSubmitBatch = async (batch) => {
     const formData = new FormData();
-    batch.forEach(file => formData.append('selectedFiles', file));
+    batch.forEach((file) => formData.append("selectedFiles", file));
 
     formData.append("imageFile", imageFile);
     formData.append("proccesstype", isColor);
-    console.log(isColor)
+    console.log(isColor);
 
     // Upload the batch
     try {
@@ -135,7 +85,14 @@ const Application = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Batch uploaded successfully", data);
+        const dataArray = Object.keys(data).map((key) => {
+          return {
+            fileName: key,
+            ...data[key],
+          };
+        });
+
+        setDummyData((prevData) => [...prevData, ...dataArray]);
       } else {
         console.error("Batch upload failed", response.status);
       }
@@ -158,13 +115,13 @@ const Application = () => {
         if (validImageExtensions.includes(fileExtension)) {
           totalSize += file.size;
           if (totalSize <= maxFileSize) {
-              selectedImages.push(file);
+            selectedImages.push(file);
           } else {
-              alert('The total size of the selected images exceeds the limit.');
-              break;
+            alert("The total size of the selected images exceeds the limit.");
+            break;
           }
         } else {
-            console.log(`Invalid file type: ${file.name}`);
+          console.log(`Invalid file type: ${file.name}`);
         }
       }
 
@@ -193,20 +150,50 @@ const Application = () => {
   const endIndex = startIndex + itemsPerPage;
   const itemsToDisplay = dummyData.slice(startIndex, endIndex);
 
-  // Pagination buttons
-  const paginationButtons = [];
-  for (let i = 1; i <= totalPages; i++) {
-    paginationButtons.push(
-      <div
-        key={i}
-        className={`cursor-pointer ${currentPage === i ? "text-blue-500" : ""}`}
-        onClick={() => goToPage(i)}
-      >
-        {i}
-      </div>
-    );
-  }
+  // Function to generate pagination range
+  const getPaginationRange = (currentPage, totalPages) => {
+    const delta = 2; 
+    const range = [];
 
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
+      range.push(i);
+    }
+
+    if (currentPage - delta > 2) {
+      range.unshift("...");
+    }
+    if (currentPage + delta < totalPages - 1) {
+      range.push("...");
+    }
+
+    range.unshift(1);
+    if (totalPages > 1) range.push(totalPages);
+
+    return range;
+  };
+
+  const paginationRange = getPaginationRange(currentPage, totalPages);
+  const paginationButtons = paginationRange.map((page, index) => {
+    if (page === "...") {
+      return <span key={index}>...</span>;
+    } else {
+      return (
+        <div
+          key={index}
+          className={`cursor-pointer ${
+            currentPage === page ? "text-blue-500" : ""
+          }`}
+          onClick={() => goToPage(page)}
+        >
+          {page}
+        </div>
+      );
+    }
+  });
   React.useEffect(() => {
     let timeout;
 
@@ -308,6 +295,9 @@ const Application = () => {
               <div className="flex flex-col space-y-4 items-center">
                 <div className="flex flex-row justify-center items-center space-x-4">
                   <button
+                    onClick={() => {
+                      setDummyData([]);
+                    }}
                     type="submit"
                     className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
                   >
@@ -383,25 +373,47 @@ const Application = () => {
           {/* rightside */}
           <div className="w-[50%] px-4 border-l-white border-l-2 ">
             <div className="flex flex-1 flex-col justify-center h-[500px] items-center font-aenonikregular text-[18px] gap-y-4">
-              <p className="text-white">54 Results in 0.57 seconds</p>
+              <p className="text-white">
+                {dummyData.length !== 0 ?
+                  <>{dummyData.length} Results in 0.57 seconds</> :
+                  <>0 Reuslts in 0.57 seconds</>
+                }
+              </p>
               <div className="flex flex-wrap gap-x-5 gap-y-6 justify-center">
-                {itemsToDisplay.map((item, key) => (
-                  <ResultCard
-                    key={key}
-                    imageResult={item.imageResult}
-                    similarity={item.similarity}
-                  />
-                ))}
+                {itemsToDisplay.map((item, key) => {
+                  const name = item.fileName;
+                  const parts = name.split(".");
+                  const extension = parts[parts.length - 1].toLowerCase();
+
+                  return (
+                    <ResultCard
+                      key={key}
+                      imageResult={item.base64}
+                      similarity={item.Similarity}
+                      imageFormat={extension}
+                    />
+                  );
+                })}
               </div>
               {/* pagination */}
               <div className="mt-5 flex flex-row space-x-3 justify-center items-center">
-                <MdOutlineArrowBackIosNew
-                  onClick={() => goToPage(currentPage - 1)}
-                />
-                {paginationButtons}
-                <MdOutlineArrowForwardIos
-                  onClick={() => goToPage(currentPage + 1)}
-                />
+                {dummyData.length !== 0 && (
+                  <>
+                    {currentPage !== 1 && (
+                      <MdOutlineArrowBackIosNew
+                        onClick={() => goToPage(currentPage - 1)}
+                        className="cursor-pointer text-red-600"
+                      />
+                    )}
+                    {paginationButtons}
+                    {currentPage !== totalPages && (
+                      <MdOutlineArrowForwardIos
+                        onClick={() => goToPage(currentPage + 1)}
+                        className="cursor-pointer text-red-600"
+                      />
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
