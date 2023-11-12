@@ -330,7 +330,7 @@ func cosineSimilarity(vecA, vecB [72]float32) float32 {
     normA = float32(math.Sqrt(float64(normA)))
     normB = float32(math.Sqrt(float64(normB)))
 
-    return dotProduct / (normA * normB)
+    return (dotProduct / (normA * normB))*100
 }
 
 func timer(name string) func() {
