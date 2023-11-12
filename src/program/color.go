@@ -56,53 +56,33 @@ func loadImage(filename string) (image.Image, error) {
     return img, nil
 }
 
-func MaxC(R,G,B float32) float32 {
-	if R>G {
-		if R>B {
-			return R
-		} else {
-			return B
-		}
-	} else {
-		if G>B {
-			return G
-		} else {
-			return B	
-		}
-	}
-}
-
-func MinC(R,G,B float32) float32 {
-	if R<G {
-		if R<B {
-			return R
-		} else {
-			return B
-		}
-	} else {
-		if G<B {
-			return G
-		} else {
-			return B	
-		}
-	}
-}
-
 func getNormalizedRGBValues(img image.Image) ImageRGB {
     bounds := img.Bounds()
-    width, height := bounds.Max.X-bounds.Min.X, bounds.Max.Y-bounds.Min.Y
+    width, height := bounds.Dx(), bounds.Dy()
     PixelRGBMatrix := make([][]PixelRGB, height)
 
-    for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+    for y := 0; y < height; y++ {
         PixelRGBMatrix[y] = make([]PixelRGB, width)
-        for x := bounds.Min.X; x < bounds.Max.X; x++ {
-            r, g, b, _ := img.At(x, y).RGBA()
-            rNorm := float32(r) / 255.0
-            gNorm := float32(g) / 255.0
-            bNorm := float32(b) / 255.0
-            cmaxNorm := MaxC(rNorm, gNorm, bNorm)
-            cminNorm := MinC(rNorm, gNorm, bNorm)
-            PixelRGB := PixelRGB{
+        for x := 0; x < width; x++ {
+            r, g, b, _ := img.At(x+bounds.Min.X, y+bounds.Min.Y).RGBA()
+            rNorm := float32(r >> 8) / 255.0
+            gNorm := float32(g >> 8) / 255.0
+            bNorm := float32(b >> 8) / 255.0
+            cmaxNorm := rNorm
+            if gNorm > cmaxNorm {
+                cmaxNorm = gNorm
+            }
+            if bNorm > cmaxNorm {
+                cmaxNorm = bNorm
+            }
+            cminNorm := rNorm
+            if gNorm < cminNorm {
+                cminNorm = gNorm
+            }
+            if bNorm < cminNorm {
+                cminNorm = bNorm
+            }
+            PixelRGBMatrix[y][x] = PixelRGB{
                 R:    rNorm,
                 G:    gNorm,
                 B:    bNorm,
@@ -110,7 +90,6 @@ func getNormalizedRGBValues(img image.Image) ImageRGB {
                 cmin: cminNorm,
                 delta: cmaxNorm - cminNorm,
             }
-            PixelRGBMatrix[y][x] = PixelRGB
         }
     }
 
@@ -285,45 +264,73 @@ func printHSVMatrix(image ImageHSV) {
 }
 
 func convertHSVToVector(imgHSV ImageHSV, vector *[72]float32) {
+    var indexH, indexS, indexV int
 
-	for i := range imgHSV.ValueHSV {
-		for j := range imgHSV.ValueHSV[i] {
-			h := imgHSV.ValueHSV[i][j].H
-			s := imgHSV.ValueHSV[i][j].S
-			v := imgHSV.ValueHSV[i][j].V
+    for i := range imgHSV.ValueHSV {
+        for j := range imgHSV.ValueHSV[i] {
+            h := imgHSV.ValueHSV[i][j].H
+            s := imgHSV.ValueHSV[i][j].S
+            v := imgHSV.ValueHSV[i][j].V
 
-            if (h < 0) {
-                h = h+360
-            }
-	        indexH := int(h / 8) // Index for Hue bin
-            if indexH >= 8 {
-                indexH = 7 // Ensuring the index doesn't go out of bounds
-            }   
-
-            indexS := int(s * 3) // Index for Saturation bin
-            if indexS >= 3 {
-                indexS = 2 // Ensuring the index doesn't go out of bounds
+            if h == 360 {
+                h = 0
+            } else if h < 0 {
+                h += 360
             }
 
-            indexV := int(v * 3) // Index for Value bin
-            if indexV >= 3 {
-                indexV = 2 // Ensuring the index doesn't go out of bounds
+            if h > 315.5 && h <= 360 {
+                indexH = 0
+            } else if h >= 1 && h <= 25.5 {
+                indexH = 1
+            } else if h > 25.5 && h <= 40.5 {
+                indexH = 2
+            } else if h > 40.5 && h <= 120.5 {
+                indexH = 3
+            } else if h > 120.5 && h <= 190.5 {
+                indexH = 4
+            } else if h > 190.5 && h <= 270.5 {
+                indexH = 5
+            } else if h > 270.5 && h <= 295.5 {
+                indexH = 6
+            } else if h > 295.5 && h <= 315.5 {
+                indexH = 7
             }
 
-            index := (indexH * 3 * 3) + (indexS * 3) + indexV
+            if s >= 0 && s < 0.2 {
+                indexS = 0
+            } else if s >= 0.2 && s < 0.7 {
+                indexS = 1
+            } else if s >= 0.7 && s <= 1 {
+                indexS = 2
+            }
+
+            if v >= 0 && v < 0.2 {
+                indexV = 0
+            } else if v >= 0.2 && v < 0.7 {
+                indexV = 1
+            } else if v >= 0.7 && v <= 1 {
+                indexV = 2
+            }
+
+            // fmt.Printf("%d %d %d\n", indexH, indexS, indexV)
+            index := (indexH * 9) + (indexS * 3) + indexV
             vector[index]++
-		}
-	}
-} 
+        }
+    }
+}
+
 
 func cosineSimilarity(vecA, vecB [72]float32) float32 {
     var dotProduct, normA, normB float32
-    for i, val := range vecA {
-        dotProduct += val * vecB[i]
-        normA += val * val
+    for i := range vecA {
+        dotProduct += vecA[i] * vecB[i]
+        normA += vecA[i] * vecA[i]
         normB += vecB[i] * vecB[i]
     }
-    return dotProduct / (float32(math.Sqrt(float64(normA))) * float32(math.Sqrt(float64(normB))))
+    normA = float32(math.Sqrt(float64(normA)))
+    normB = float32(math.Sqrt(float64(normB)))
+
+    return dotProduct / (normA * normB)
 }
 
 func timer(name string) func() {
@@ -335,8 +342,8 @@ func timer(name string) func() {
 
 func main() {
     defer timer("main")()  
-    imageFile1 := "../../img/tes2_0.png"
-    imageFile2 := "../../img/Winter_0.png"
+    imageFile1 := "../../img/beda1.png"
+    imageFile2 := "../../img/beda2.png"
     img1, err := loadImage(imageFile1)
     img2, err := loadImage(imageFile2)
     if err != nil {
