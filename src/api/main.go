@@ -109,13 +109,12 @@ func main ()  {
 			file, err := fileHeader.Open()
 			if err != nil {
 				log.Printf("Error opening file: %v\n", err)
-				continue // Skip files that can't be opened
 			}
 			defer file.Close()
 
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(file)
-			var halo string=fileHeader.Filename
+			// var halo string=fileHeader.Filename
 			var temp string= base64.StdEncoding.EncodeToString(buf.Bytes())
 
 			img, _, err := image.Decode(buf)
@@ -124,31 +123,22 @@ func main ()  {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "error decoding image"})
 			}
 
-			fileData := fiber.Map{}
-
+			var sim float32
 			if isColor {
 				var compareData [9][72]float32 = color.ColorProcessing(img)
-				var sim float32 = color.ArrayOfVectorCosineWeighting(colorVector, compareData)
-	
-				log.Println(halo,textureVector,compareData)
-	
-				fileData = fiber.Map{
-					"base64": temp,
-					"Similarity": sim,
-				}
+				sim = color.ArrayOfVectorCosineWeighting(colorVector, compareData)
 			} else {
 				var compareData texture.VectorCHE = texture.TextureProcessing(img)
-				var sim float32 = texture.TextureSimilarity(textureVector,compareData)
-	
-				// log.Println(halo,textureVector,compareData)
-	
-				fileData = fiber.Map{
+				sim = texture.TextureSimilarity(textureVector, compareData)
+			}
+
+			if sim >= 60 {
+				fileData := fiber.Map{
 					"base64": temp,
 					"Similarity": sim,
 				}
+				response[fileHeader.Filename] = fileData
 			}
-
-			response[fileHeader.Filename] = fileData
 		}
 	
 		log.Println("Sending response")
