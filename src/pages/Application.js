@@ -20,6 +20,7 @@ const Application = () => {
   const [imageBase64, setImageBase64] = React.useState(null);
   const [isColor, setisColor] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [scrapUrl, setScrapUrl] = React.useState("");
 
   const maxFileSize = 4 * 1024 * 1024 * 1024;
   const toggleSwitch = () => setisColor(!isColor);
@@ -30,10 +31,10 @@ const Application = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!imageFile || selectedFiles.length === 0) {
-      alert("Please select both an image file and dataset files.");
-      return;
-    }
+    // if (!imageFile || selectedFiles.length === 0) {
+    //   alert("Please select both an image file and dataset files.");
+    //   return;
+    // }
 
     for (let i = 0; i < selectedFiles.length; i += BATCH_SIZE) {
       const batch = selectedFiles.slice(i, i + BATCH_SIZE);
@@ -133,6 +134,15 @@ const Application = () => {
       }
     }
   };
+
+  const handleScrapButtonClick = () => {
+    const answer = prompt("What is the website url that you gonna scrap?");
+    if (answer !== null) {
+      setScrapUrl(answer);
+    } else {
+    }
+  };
+
 
   // Constants
   const itemsPerPage = 4;
@@ -313,6 +323,7 @@ const Application = () => {
                     >
                       Upload Dataset
                     </button>
+
                     {/* {dataset ? (
                       <button
                         onClick={() => {
@@ -359,6 +370,9 @@ const Application = () => {
                   >
                     CLEAR ALL
                   </button>
+                  <button id="scrapbutton" onClick={handleScrapButtonClick} className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300">
+                    Image Scraping
+                  </button>
                 </div>
                 <div className="w-full h-[80px]">
                   <FolderDropzone
@@ -374,10 +388,11 @@ const Application = () => {
           <div className="w-[50%] px-4 border-l-white border-l-2 ">
             <div className="flex flex-1 flex-col justify-center h-[500px] items-center font-aenonikregular text-[18px] gap-y-4">
               <p className="text-white">
-                {dummyData.length !== 0 ?
-                  <>{dummyData.length} Results in 0.57 seconds</> :
-                  <>0 Reuslts in 0.57 seconds</>
-                }
+                {dummyData.length !== 0 ? (
+                  <>{dummyData.length} Results in 0.57 seconds</>
+                ) : (
+                  <>0 Results in 0.57 seconds</>
+                )}
               </p>
               <div className="flex flex-wrap gap-x-5 gap-y-6 justify-center">
                 {itemsToDisplay.map((item, key) => {
