@@ -5,6 +5,7 @@ import Home from "./Home";
 import Developers from "./Developers";
 import Technology from "./Technology";
 import Application from "./Application";
+import Guides from "./Guides";
 
 function App() {
   return (
@@ -12,7 +13,7 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/guides" element={<Home />} />
+          <Route path="/guides" element={<Guides />} />
           <Route path="/technology" element={<Technology />} />
           <Route path="/developers" element={<Developers />} />
           <Route path="/application" element={<Application />} />
