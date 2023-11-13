@@ -6,6 +6,9 @@ import {
   MdOutlineArrowBackIosNew,
   MdOutlineArrowForwardIos,
 } from "react-icons/md";
+import { pdf } from "@react-pdf/renderer";
+import { CiExport } from "react-icons/ci";
+import MyDocument from "../components/MyDocument";
 
 const BATCH_SIZE = 100;
 
@@ -186,6 +189,19 @@ const Application = () => {
     return range;
   };
 
+  const generatePDFDocument = async () => {
+    try {
+      const blob = await pdf(<MyDocument arrayItems={dummyData}/>).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "MatchLens Report.pdf";
+      link.click();
+    } catch (error) {
+      console.error("Error generating PDF", error);
+    }
+  };
+
   const paginationRange = getPaginationRange(currentPage, totalPages);
   const paginationButtons = paginationRange.map((page, index) => {
     if (page === "...") {
@@ -239,30 +255,41 @@ const Application = () => {
           {/* leftside */}
           <div className="w-[50%] px-8 flex flex-col">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex flex-row items-center justify-center gap-x-5">
-                <button
-                  type="button"
-                  className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
-                  onClick={() => document.getElementById("imageFile").click()}
-                >
-                  Insert an Image
-                </button>
-                <input
-                  type="file"
-                  id="imageFile"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  accept="image/*"
-                />
-                {imageFile ? (
-                  <p className="text-white font-aenoniklight text-[15px] text-center">
-                    {fileName}
-                  </p>
-                ) : (
-                  <p className="text-white font-aenoniklight text-[15px] text-center">
-                    No file read.
-                  </p>
-                )}
+              <div className="flex flex-row items-center justify-between px-0">
+                <div className="flex-row flex items-center gap-x-5">
+                  <button
+                    type="button"
+                    className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
+                    onClick={() => document.getElementById("imageFile").click()}
+                  >
+                    Insert an Image
+                  </button>
+                  <input
+                    type="file"
+                    id="imageFile"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept="image/*"
+                  />
+                  {imageFile ? (
+                    <p className="text-white font-aenoniklight text-[15px] text-center">
+                      {fileName}
+                    </p>
+                  ) : (
+                    <p className="text-white font-aenoniklight text-[15px] text-center">
+                      No file read.
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <button
+                    className="w-fit place-self-center flex items-center gap-x-2 border-2 px-2 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
+                    onClick={generatePDFDocument}
+                  >
+                    <CiExport></CiExport>
+                    Export to PDF
+                  </button>
+                </div>
               </div>
 
               <div
@@ -370,7 +397,11 @@ const Application = () => {
                   >
                     CLEAR ALL
                   </button>
-                  <button id="scrapbutton" onClick={handleScrapButtonClick} className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300">
+                  <button
+                    id="scrapbutton"
+                    onClick={handleScrapButtonClick}
+                    className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
+                  >
                     Image Scraping
                   </button>
                 </div>
