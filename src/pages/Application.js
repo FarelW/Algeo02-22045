@@ -191,7 +191,8 @@ const Application = () => {
 
   const generatePDFDocument = async () => {
     try {
-      const blob = await pdf(<MyDocument arrayItems={dummyData}/>).toBlob();
+      console.log(imageBase64)
+      const blob = await pdf(<MyDocument compareFile={imageBase64} arrayItems={dummyData}/>).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -285,6 +286,7 @@ const Application = () => {
                   <button
                     className="w-fit place-self-center flex items-center gap-x-2 border-2 px-2 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
                     onClick={generatePDFDocument}
+                    type="button"
                   >
                     <CiExport></CiExport>
                     Export to PDF

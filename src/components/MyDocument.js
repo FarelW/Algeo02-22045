@@ -27,10 +27,13 @@ const styles = StyleSheet.create({
   },
 });
 
-const MyDocument = ({ arrayItems }) => {
+const MyDocument = ({ arrayItems, compareFile }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        <Text>Base Image to Compare With</Text>
+        <Image style={styles.image} src={`${compareFile}`} />
+        <Text>===================================================================</Text>
         {arrayItems.map((item, key) => {
           const name = item.fileName;
           const parts = name.split(".");
