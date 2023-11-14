@@ -90,7 +90,7 @@ const Form =() => {
                 {Object.entries(uploadedData).map(([fileName, base64String]) => (
                     <div key={fileName}>
                         <p>{fileName}</p>
-                        <img src={`data:image/png;base64,${base64String}`} alt={`Uploaded ${fileName}`} />
+                        <img src={`data:image/png;base64,${base64String}`} alt={`${fileName}`} />
                     </div>
                 ))}
             </div>
