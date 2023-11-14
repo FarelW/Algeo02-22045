@@ -25,7 +25,7 @@ const Application = () => {
   const [imageBase64, setImageBase64] = React.useState(null);
   const [isColor, setisColor] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [scrapUrl, setScrapUrl] = React.useState("");
+  const [scrapUrl, setScrapUrl] = React.useState(null);
 
   const maxFileSize = 4 * 1024 * 1024 * 1024;
   const toggleSwitch = () => setisColor(!isColor);
@@ -77,17 +77,29 @@ const Application = () => {
   const handleSubmitBatch = async (batch) => {
     const formData = new FormData();
     batch.forEach((file) => formData.append("selectedFiles", file));
-
-    formData.append("imageFile", imageFile);
-    formData.append("proccesstype", isColor);
+    if (scrapUrl) {
+      formData.append("url", scrapUrl);
+    } else {
+      formData.append("imageFile", imageFile);
+      formData.append("proccesstype", isColor);
+    }
+    console.log(scrapUrl)
     console.log(isColor);
 
     // Upload the batch
     try {
-      const response = await fetch("http://localhost:8080/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      let response;
+      if (scrapUrl !== null) {
+        response = await fetch("http://localhost:8080/api/scraping", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        response = await fetch("http://localhost:8080/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -106,6 +118,8 @@ const Application = () => {
       } else {
         console.error("Batch upload failed", response.status);
       }
+      setScrapUrl(null);
+      console.log(scrapUrl);
     } catch (error) {
       console.error("Error during batch upload:", error);
     }
@@ -146,10 +160,7 @@ const Application = () => {
 
   const handleScrapButtonClick = () => {
     const answer = prompt("What is the website url that you gonna scrap?");
-    if (answer !== null) {
-      setScrapUrl(answer);
-    } else {
-    }
+    setScrapUrl(answer);
   };
 
 
