@@ -8,6 +8,8 @@ import {
 } from "react-icons/md";
 import { pdf } from "@react-pdf/renderer";
 import { CiExport } from "react-icons/ci";
+import { MdVideocam, MdVideocamOff } from "react-icons/md";
+import { FaCamera } from "react-icons/fa";
 import MyDocument from "../components/MyDocument";
 
 const BATCH_SIZE = 100;
@@ -96,7 +98,11 @@ const Application = () => {
           };
         });
 
-        setDummyData((prevData) => [...prevData, ...dataArray]);
+        setDummyData((prevData) => {
+          // Combine old and new data and sort by similarity
+          const combinedData = [...prevData, ...dataArray];
+          return combinedData.sort((a, b) => b.Similarity - a.Similarity);
+        });
       } else {
         console.error("Batch upload failed", response.status);
       }
@@ -243,6 +249,53 @@ const Application = () => {
     }
   }, [selectedFiles]);
 
+  const webcamRef = React.useRef(null);
+  const [webcamActive, setWebcamActive] = React.useState(false);
+
+  const toggleWebcam = () => {
+    if (webcamActive) {
+      // Turn off the webcam
+      if (webcamRef.current && webcamRef.current.srcObject) {
+        webcamRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+      setWebcamActive(false);
+    } else {
+      // Turn on the webcam
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then((stream) => {
+            if (webcamRef.current) {
+              webcamRef.current.srcObject = stream;
+              setWebcamActive(true);
+            }
+          })
+          .catch((error) => {
+            console.log("Error accessing the webcam:", error);
+          });
+      }
+    }
+  };
+
+  const captureFromWebcam = () => {
+    const video = webcamRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      const capturedImageFile = new File([blob], "captured_image.jpg", { type: "image/jpeg" });
+      setImageFile(capturedImageFile); // Set the captured image as a File object
+      setImageBase64(URL.createObjectURL(blob)); // Use URL.createObjectURL for displaying the image
+    }, 'image/jpeg');
+
+    if (webcamRef.current && webcamRef.current.srcObject) {
+      webcamRef.current.srcObject.getTracks().forEach(track => track.stop());
+      setWebcamActive(false);
+    }
+  };
+
   return (
     <div className="min-w-screen min-h-screen flex flex-col">
       <main className="flex-1 relative">
@@ -294,18 +347,35 @@ const Application = () => {
                 </div>
               </div>
 
-              <div
-                className={`relative w-auto max-h-[300px] ${
-                  imageFile ? "" : "min-h-[300px]"
-                } border-white border`}
-              >
-                {imageBase64 && (
+              <div className={`relative w-auto h-[300px] border-white border p-4`}>
+                {imageBase64 ? (
                   <img
                     src={imageBase64}
-                    alt="Uploaded"
-                    className="max-h-[298px] mx-auto"
+                    alt="Uploaded or Captured"
+                    className="absolute top-0 left-0 w-full h-full object-contain mx-auto"
                   />
+                ) : (
+                  <video ref={webcamRef} autoPlay className="absolute top-0 left-0 w-full h-full object-cover"></video>
                 )}
+
+                <div className="absolute left-4 bottom-4 flex items-center space-x-2">
+                  {!imageBase64 && (
+                  <div className="absolute left-0.5 bottom-0.5 flex items-center space-x-2">
+                    <button 
+                      onClick={toggleWebcam} 
+                      className="p-2 border border-transparent rounded-full shadow-sm text-white bg-gray-500 hover:bg-gray-600 focus:outline-none"
+                    >
+                      {webcamActive ? <MdVideocamOff className="h-6 w-6" /> : <MdVideocam className="h-6 w-6" />}
+                    </button>
+
+                    {webcamActive && (
+                      <button onClick={captureFromWebcam} className="p-2 border border-transparent rounded-full shadow-sm text-white bg-gray-500 hover:bg-gray-600 focus:outline-none">
+                        <FaCamera className="h-6 w-6" />
+                      </button>
+                    )}
+                  </div>
+                  )}
+                </div>
                 <div className="absolute right-4 bottom-4">
                   <div
                     className={`w-20 h-8 flex items-center border-white border bg-gray-300 rounded-full p-1 cursor-pointer ${
