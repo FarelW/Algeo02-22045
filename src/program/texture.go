@@ -1,14 +1,15 @@
 package program
 
 import (
-    // "fmt"
-    "image"
-    // "os"
-    // "image/jpeg"
-    // "image/png"
-    // "log"
-    "math"
-    // "image/color"
+	// "fmt"
+	"image"
+	// "log"
+	// "os"
+	// "image/jpeg"
+	// "image/png"
+	// "log"
+	"math"
+	// "image/color"
 )
 
 type TexturePixel struct {
@@ -94,6 +95,8 @@ func CHE(matrix [256][256]float32)VectorCHE{
     vektor.C=totalC
     vektor.H=totalH
     vektor.E=totalE
+    
+    // log.Println(vektor.C,vektor.H,vektor.E)
 
     return vektor
 }
@@ -126,5 +129,5 @@ func TextureSimilarity(vector1,vector2 VectorCHE) float32{
 
     var cos float32 = dotProduct/(lengthproduct1*lengthproduct2)
 
-    return cos
+    return cos*100
 }
