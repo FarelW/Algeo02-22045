@@ -8,15 +8,13 @@ import {
 } from "react-icons/md";
 import { pdf } from "@react-pdf/renderer";
 import { CiExport } from "react-icons/ci";
-import { MdVideocam, MdVideocamOff } from "react-icons/md";
-import { FaCamera } from "react-icons/fa";
 import MyDocument from "../components/MyDocument";
 
 const BATCH_SIZE = 100;
 
 const Application = () => {
   const [dummyData, setDummyData] = React.useState([]);
-  console.log(dummyData);
+  // console.log(dummyData);
   // data yang bisa diambil adalah imageFile dan dataset untuk dipass ke backend
   const [imageFile, setImageFile] = React.useState(null); //base64-encoded string
   const [selectedFiles, setSelectedFiles] = React.useState([]); // array of file
@@ -26,6 +24,8 @@ const Application = () => {
   const [isColor, setisColor] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [scrapUrl, setScrapUrl] = React.useState(null);
+  const [second,setsecond] = React.useState(0);
+  const [submitImage, setsubmitImage] = React.useState(null);
 
   const maxFileSize = 4 * 1024 * 1024 * 1024;
   const toggleSwitch = () => setisColor(!isColor);
@@ -33,23 +33,82 @@ const Application = () => {
   const handleFilesAdded = (newFiles) => {
     setSelectedFiles(newFiles);
   };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    const startTime = performance.now()
+    if (scrapUrl) {
+      handleSubmitScraping()
+        .then(() => {
+            const endTime = performance.now();
+            const elapsedTime = (endTime - startTime) / 1000;
+            setsecond(elapsedTime.toFixed(2));
+            console.log(`Url submission completed in ${elapsedTime} seconds.`);
+        })
+        .catch((error) => {
+            console.error("Error in single submission:", error);
+        })
+    } else {
+      const promises = []
 
-    // if (!imageFile || selectedFiles.length === 0) {
-    //   alert("Please select both an image file and dataset files.");
-    //   return;
-    // }
-
-    for (let i = 0; i < selectedFiles.length; i += BATCH_SIZE) {
-      const batch = selectedFiles.slice(i, i + BATCH_SIZE);
-      handleSubmitBatch(batch);
+      for (let i = 0; i < selectedFiles.length; i += BATCH_SIZE) {
+        const batch = selectedFiles.slice(i, i + BATCH_SIZE)
+        promises.push(
+        handleSubmitBatch(batch)
+          .then(() => {
+            const endTime = performance.now();
+            const elapsedTime = (endTime - startTime) / 1000;
+            setsecond(elapsedTime.toFixed(2));
+            console.log(`Batch submissions completed in ${elapsedTime} seconds.`);
+          })
+          .catch((error) => {
+            console.error("Error in batch submissions:", error);
+          })
+        );
+      }
     }
-
     // Pake tiga ini buat di post ke backend ya ler
     // console.log(formData.get("proccesstype")); // Log the "proccesstype" value (true maka color processing, false maka texture)
     // console.log(formData.get("image")); // Log the "image" value (base-64 string)
     // console.log(formData.getAll("selectedFiles[]")); // Log array of selectedFiles
+  };
+
+  const handleSubmitScraping = async () => {
+    if (!imageFile) {
+      console.error("Image file is missing.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("Scrapurl", scrapUrl); // Make sure this matches the form field name expected by your Go server
+    formData.append("imageFile", imageFile);
+    formData.append("proccesstype", isColor ? "true" : "false"); // Convert boolean to string
+  
+    try {
+      const response = await fetch('http://localhost:8080/api/scrape', { // Change to /api/scrape
+        method: 'POST',
+        body: formData,
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setsubmitImage(data.imageFile.base64)
+
+        const dataArray = (data.data).map((item, index) => ({
+          fileName: index.toString(), // You can use the index as a fileName or provide a meaningful name
+          ...item,
+        }));
+
+        setDummyData((prevData) => {
+          const combinedData = [...prevData, ...dataArray];
+          return combinedData.sort((a, b) => b.Similarity - a.Similarity);
+        });
+        console.log("Scraping response:", data);
+      } else {
+        console.error("Failed to scrape:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error while sending API request:", error);
+    }
   };
 
   function handleFileChange(event) {
@@ -76,42 +135,33 @@ const Application = () => {
 
   const handleSubmitBatch = async (batch) => {
     const formData = new FormData();
-    batch.forEach((file) => formData.append("selectedFiles", file));
-    if (scrapUrl) {
-      formData.append("url", scrapUrl);
-    } else {
+    batch.forEach((file) => formData.append("selectedFiles", file));    
+    if (!scrapUrl) {
       formData.append("imageFile", imageFile);
       formData.append("proccesstype", isColor);
     }
-    console.log(scrapUrl)
-    console.log(isColor);
+    // console.log("scrapurl",scrapUrl)
+    // console.log(isColor);
 
     // Upload the batch
     try {
       let response;
-      if (scrapUrl !== null) {
-        response = await fetch("http://localhost:8080/api/scraping", {
-          method: "POST",
-          body: formData,
-        });
-      } else {
-        response = await fetch("http://localhost:8080/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-      }
+      response = await fetch("http://localhost:8080/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
       if (response.ok) {
         const data = await response.json();
-        const dataArray = Object.keys(data).map((key) => {
-          return {
-            fileName: key,
-            ...data[key],
-          };
-        });
+        // console.log("data:",data)
+        setsubmitImage(data.imageFile.base64)
+
+        const dataArray = (data.data).map((item, index) => ({
+          fileName: index.toString(), // You can use the index as a fileName or provide a meaningful name
+          ...item,
+        }));
 
         setDummyData((prevData) => {
-          // Combine old and new data and sort by similarity
           const combinedData = [...prevData, ...dataArray];
           return combinedData.sort((a, b) => b.Similarity - a.Similarity);
         });
@@ -152,7 +202,6 @@ const Application = () => {
       setSelectedFiles(selectedImages);
 
       if (selectedImages.length > 0) {
-        // Handle successful image upload here if needed.
         console.log(`Uploaded ${selectedImages.length} images.`);
       }
     }
@@ -208,8 +257,8 @@ const Application = () => {
 
   const generatePDFDocument = async () => {
     try {
-      console.log(imageBase64)
-      const blob = await pdf(<MyDocument compareFile={imageBase64} arrayItems={dummyData}/>).toBlob();
+      console.log(dummyData)
+      const blob = await pdf(<MyDocument compareFile={submitImage} arrayItems={dummyData}/>).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -261,50 +310,75 @@ const Application = () => {
   }, [selectedFiles]);
 
   const webcamRef = React.useRef(null);
-  const [webcamActive, setWebcamActive] = React.useState(false);
 
-  const toggleWebcam = () => {
-    if (webcamActive) {
-      // Turn off the webcam
-      if (webcamRef.current && webcamRef.current.srcObject) {
-        webcamRef.current.srcObject.getTracks().forEach(track => track.stop());
-      }
-      setWebcamActive(false);
+  const captureFromWebcam = () => {
+    if (webcamRef.current && webcamRef.current.srcObject && webcamRef.current.videoWidth > 0) {
+      const video = webcamRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+      canvas.toBlob((blob) => {
+        setImageBase64(URL.createObjectURL(blob));
+        const capturedImageFile = new File([blob], "captured_image.jpg", { type: "image/jpeg" });
+        setImageFile(capturedImageFile);
+        setFileName("captured.jpg");
+      }, 'image/jpeg');
     } else {
-      // Turn on the webcam
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then((stream) => {
-            if (webcamRef.current) {
-              webcamRef.current.srcObject = stream;
-              setWebcamActive(true);
-            }
-          })
-          .catch((error) => {
-            console.log("Error accessing the webcam:", error);
-          });
-      }
+      console.log("Webcam not ready for capture.");
     }
   };
 
-  const captureFromWebcam = () => {
-    const video = webcamRef.current;
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    canvas.toBlob((blob) => {
-      const capturedImageFile = new File([blob], "captured_image.jpg", { type: "image/jpeg" });
-      setImageFile(capturedImageFile); // Set the captured image as a File object
-      setImageBase64(URL.createObjectURL(blob)); // Use URL.createObjectURL for displaying the image
-    }, 'image/jpeg');
-
-    if (webcamRef.current && webcamRef.current.srcObject) {
-      webcamRef.current.srcObject.getTracks().forEach(track => track.stop());
-      setWebcamActive(false);
+  const startWebcam = () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          if (webcamRef.current) {
+            webcamRef.current.srcObject = stream;
+            // console.log("Webcam started.");
+          }
+        })
+        .catch((error) => {
+          console.log("Error accessing the webcam:", error);
+        });
     }
+  };
+
+  React.useEffect(() => {
+    startWebcam();
+
+    const captureInterval = setInterval(captureFromWebcam, 10000); // Capture every 10 seconds
+
+    return () => {
+      clearInterval(captureInterval);
+      if (webcamRef.current && webcamRef.current.srcObject) {
+        webcamRef.current.srcObject.getTracks().forEach(track => track.stop());
+        // console.log("Webcam stopped.");
+      }
+    };
+  }, []);
+
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [scrapUrlInput, setScrapUrlInput] = React.useState("");
+
+  const handleScrapUrlChange = (event) => {
+    setScrapUrlInput(event.target.value);
+  };
+
+  const clearScrapUrl = () => {
+      setScrapUrl(null);
+      setScrapUrlInput("");
+  };
+
+  const openModal = () => {
+      setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setScrapUrl(scrapUrlInput)
+    setIsModalOpen(false);
   };
 
   return (
@@ -359,34 +433,17 @@ const Application = () => {
               </div>
 
               <div className={`relative w-auto h-[300px] border-white border p-4`}>
-                {imageBase64 ? (
-                  <img
-                    src={imageBase64}
-                    alt="Uploaded or Captured"
-                    className="absolute top-0 left-0 w-full h-full object-contain mx-auto"
-                  />
-                ) : (
-                  <video ref={webcamRef} autoPlay className="absolute top-0 left-0 w-full h-full object-cover"></video>
-                )}
-
-                <div className="absolute left-4 bottom-4 flex items-center space-x-2">
-                  {!imageBase64 && (
-                  <div className="absolute left-0.5 bottom-0.5 flex items-center space-x-2">
-                    <button 
-                      onClick={toggleWebcam} 
-                      className="p-2 border border-transparent rounded-full shadow-sm text-white bg-gray-500 hover:bg-gray-600 focus:outline-none"
-                    >
-                      {webcamActive ? <MdVideocamOff className="h-6 w-6" /> : <MdVideocam className="h-6 w-6" />}
-                    </button>
-
-                    {webcamActive && (
-                      <button onClick={captureFromWebcam} className="p-2 border border-transparent rounded-full shadow-sm text-white bg-gray-500 hover:bg-gray-600 focus:outline-none">
-                        <FaCamera className="h-6 w-6" />
-                      </button>
-                    )}
-                  </div>
+                {imageBase64 && (
+                    <img
+                      src={imageBase64}
+                      alt="Captured"
+                      className="absolute top-0 left-0 w-full h-full object-contain mx-auto" // Set a fixed height for the preview
+                    />
                   )}
-                </div>
+
+                  <div className="absolute bottom-0 left-0 m-4 border border-white p-1">
+                    <video ref={webcamRef} autoPlay muted className="object-contain h-16"></video>
+                  </div>
                 <div className="absolute right-4 bottom-4">
                   <div
                     className={`w-20 h-8 flex items-center border-white border bg-gray-300 rounded-full p-1 cursor-pointer ${
@@ -482,11 +539,38 @@ const Application = () => {
                   </button>
                   <button
                     id="scrapbutton"
-                    onClick={handleScrapButtonClick}
+                    onClick={openModal}
                     className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
                   >
                     Image Scraping
                   </button>
+                  {isModalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                      <div className="bg-white p-8 rounded-lg shadow-lg">
+                        <input
+                            type="text"
+                            placeholder="Enter URL for image scraping"
+                            value={scrapUrlInput}
+                            onChange={handleScrapUrlChange}
+                            className="p-3 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-lg"
+                        />
+                        <div className="flex justify-end space-x-4 mt-6">
+                          <button
+                              onClick={clearScrapUrl}
+                              className="px-6 py-3 bg-red-500 text-white rounded-md text-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                          >
+                            Clear
+                          </button>
+                          <button
+                              onClick={closeModal}
+                              className="px-6 py-3 bg-blue-500 text-white rounded-md text-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            OK
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                )}
                 </div>
                 <div className="w-full h-[80px]">
                   <FolderDropzone
@@ -501,15 +585,25 @@ const Application = () => {
           {/* rightside */}
           <div className="w-[50%] px-4 border-l-white border-l-2 ">
             <div className="flex flex-1 flex-col justify-center h-[500px] items-center font-aenonikregular text-[18px] gap-y-4">
+            {submitImage && (<div className="border-white w-[150px] border-2 flex flex-col">
+              <div className="border-white w-full order-2 h-[100px] border-b-1">
+                <img
+                  src={`data:image/jpeg;base64,${submitImage}`}
+                  className="w-full h-full object-cover object-center"
+                  alt="result"
+                ></img>
+              </div>
+            </div>)}
               <p className="text-white">
-                {dummyData.length !== 0 ? (
-                  <>{dummyData.length} Results in 0.57 seconds</>
+                {(dummyData.length !== 0 || second!=0) ? (
+                  <>{dummyData.length} Results in {second} seconds</>
                 ) : (
-                  <>0 Results in 0.57 seconds</>
+                  <>0 Results in 0 seconds</>
                 )}
               </p>
               <div className="flex flex-wrap gap-x-5 gap-y-6 justify-center">
-                {itemsToDisplay.map((item, key) => {
+                {itemsToDisplay
+                .map((item, key) => {
                   const name = item.fileName;
                   const parts = name.split(".");
                   const extension = parts[parts.length - 1].toLowerCase();
