@@ -32,7 +32,7 @@ const MyDocument = ({ arrayItems, compareFile }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         <Text>Base Image to Compare With</Text>
-        <Image style={styles.image} src={`${compareFile}`} />
+        <Image style={styles.image} src={`data:image/jpeg;base64,${compareFile}`} />
         <Text>===================================================================</Text>
         {arrayItems.map((item, key) => {
           const name = item.fileName;
