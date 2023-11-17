@@ -75,7 +75,7 @@ Here is the purpose of making this project :
 * Each function contains multiple error handling method to ensure greatest experience for the user.
 
 ## File Structures(Beneri)
-...
+```
 .
 │   go.mod
 │   go.sum
@@ -106,7 +106,7 @@ Here is the purpose of making this project :
         color.go
         imagescraping.go
         texture.go
-...
+```
 
 ## About
 
