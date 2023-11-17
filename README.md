@@ -75,13 +75,38 @@ Here is the purpose of making this project :
 * Each function contains multiple error handling method to ensure greatest experience for the user.
 
 ## File Structures(Beneri)
-
-This repo contains of 4 folders such as :
-- bin : contains of java executable file .class that has been compiled from the src folder
-- src : contains of main program source code .java 
-- doc : contain of our assignment report
-- test : contains of study cases problems that can be used as an input in the program.
-- output : contains of output .txt file based on users  
+...
+.
+│   go.mod
+│   go.sum
+│   index.css
+│   index.js
+│
+├───api
+│       main.go
+│
+├───components
+│       FolderDropzone.js
+│       Form.js
+│       Header.js
+│       MyDocument.js
+│       ResultCard.js
+│       Toast.js
+│       UploadCard.js
+│
+├───pages
+│       App.js
+│       Application.js
+│       Developers.js
+│       Guides.js
+│       Home.js
+│       Technology.js
+│
+└───program
+        color.go
+        imagescraping.go
+        texture.go
+...
 
 ## About
 
