@@ -9,6 +9,7 @@ import {
 import { pdf } from "@react-pdf/renderer";
 import { CiExport } from "react-icons/ci";
 import MyDocument from "../components/MyDocument";
+import { FaVideo, FaVideoSlash } from 'react-icons/fa';
 
 const BATCH_SIZE = 100;
 
@@ -310,6 +311,7 @@ const Application = () => {
   }, [selectedFiles]);
 
   const webcamRef = React.useRef(null);
+  const [webcamActive, setWebcamActive] = React.useState(false);
 
   const captureFromWebcam = () => {
     if (webcamRef.current && webcamRef.current.srcObject && webcamRef.current.videoWidth > 0) {
@@ -332,12 +334,11 @@ const Application = () => {
   };
 
   const startWebcam = () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (webcamActive && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ video: true })
         .then((stream) => {
           if (webcamRef.current) {
             webcamRef.current.srcObject = stream;
-            // console.log("Webcam started.");
           }
         })
         .catch((error) => {
@@ -346,19 +347,31 @@ const Application = () => {
     }
   };
 
+  const stopWebcam = () => {
+    if (webcamRef.current && webcamRef.current.srcObject) {
+      webcamRef.current.srcObject.getTracks().forEach(track => track.stop());
+    }
+  };
+
+
   React.useEffect(() => {
     startWebcam();
 
-    const captureInterval = setInterval(captureFromWebcam, 10000); // Capture every 10 seconds
+    const captureInterval = setInterval(() => {
+      if (webcamActive) {
+        captureFromWebcam();
+      }
+    }, 10000); // Capture every 10 seconds
 
     return () => {
       clearInterval(captureInterval);
-      if (webcamRef.current && webcamRef.current.srcObject) {
-        webcamRef.current.srcObject.getTracks().forEach(track => track.stop());
-        // console.log("Webcam stopped.");
-      }
+      stopWebcam();
     };
-  }, []);
+  }, [webcamActive]);
+
+  const toggleWebcam = () => {
+    setWebcamActive(!webcamActive);
+  };
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [scrapUrlInput, setScrapUrlInput] = React.useState("");
@@ -440,10 +453,16 @@ const Application = () => {
                       className="absolute top-0 left-0 w-full h-full object-contain mx-auto" // Set a fixed height for the preview
                     />
                   )}
+                <button 
+                  onClick={() => setWebcamActive(!webcamActive)}
+                  className="absolute bg-gray-500 hover:bg-gray-600 p-3 rounded-full inline-flex items-center justify-center"
+                  type="button">
+                  {webcamActive ? <FaVideo /> : <FaVideoSlash />}
+                </button>
 
-                  <div className="absolute bottom-0 left-0 m-4 border border-white p-1">
-                    <video ref={webcamRef} autoPlay muted className="object-contain h-16"></video>
-                  </div>
+                <div className="absolute bottom-0 left-0 m-4 border border-white p-1">
+                  <video ref={webcamRef} autoPlay muted className="object-contain h-16"></video>
+                </div>
                 <div className="absolute right-4 bottom-4">
                   <div
                     className={`w-20 h-8 flex items-center border-white border bg-gray-300 rounded-full p-1 cursor-pointer ${
@@ -540,6 +559,7 @@ const Application = () => {
                   <button
                     id="scrapbutton"
                     onClick={openModal}
+                    type="button"
                     className="w-fit place-self-center flex items-center gap-x-3 border-2 px-4 py-1 rounded-md bg-white text-black hover:cursor-pointer hover:bg-slate-600 hover:border-black hover:text-white transition-all duration-300"
                   >
                     Image Scraping
@@ -558,11 +578,13 @@ const Application = () => {
                           <button
                               onClick={clearScrapUrl}
                               className="px-6 py-3 bg-red-500 text-white rounded-md text-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                              type="button"
                           >
                             Clear
                           </button>
                           <button
                               onClick={closeModal}
+                              type="button"
                               className="px-6 py-3 bg-blue-500 text-white rounded-md text-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             OK
