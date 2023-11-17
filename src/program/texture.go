@@ -124,10 +124,14 @@ func TextureProcessing(img image.Image) VectorCHE {
 func TextureSimilarity(vector1,vector2 VectorCHE) float32{
 
     var dotProduct float32 = vector1.C*vector2.C + vector1.H*vector2.H + vector1.E*vector2.E
-    var lengthproduct1 float32 = float32(math.Sqrt(float64(vector1.C*vector1.C+vector1.H*vector1.H + vector1.E*vector1.E)))
-    var lengthproduct2 float32 = float32(math.Sqrt(float64(vector2.C*vector2.C+vector2.H*vector2.H + vector2.E*vector2.E)))
+    var lengthproduct1 float32 = float32(math.Sqrt(float64(vector1.C*vector1.C + vector1.H*vector1.H + vector1.E*vector1.E)))
+    var lengthproduct2 float32 = float32(math.Sqrt(float64(vector2.C*vector2.C + vector2.H*vector2.H + vector2.E*vector2.E)))
 
     var cos float32 = dotProduct/(lengthproduct1*lengthproduct2)
+
+    if cos*100>100 {
+        cos=1
+    }
 
     return cos*100
 }
