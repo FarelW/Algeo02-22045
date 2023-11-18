@@ -123,7 +123,6 @@ Algeo02-22045
 │   │
 │   ├───components
 │   │       FolderDropzone.js
-│   │       Form.js
 │   │       Header.js
 │   │       MyDocument.js
 │   │       ResultCard.js
@@ -168,4 +167,4 @@ This repository contains main folder structure such as _doc_, _img_, _src_, and 
    - Contributor 1 (Elbert Chailes) - https://github.com/ChaiGans
    - Contributor 2 (Farel Winalda) - https://github.com/FarelW
    - Contributor 3 (Ivan Hendrawan Tan) - https://github.com/Bodleh
-   - Guide Assistant (Fahrian Afdholi) - 
+   - Guide Assistant (Fahrian Afdholi) - https://github.com/fchrgrib
