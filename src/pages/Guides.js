@@ -14,7 +14,7 @@ function Guides() {
                 <p className="text-4xl underline underline-offset-[6px] text-center">
                     How to Use MatchLens.
                 </p>
-                <div className="mx-16 pl-3 pb-4 bg-slate-500 bg-opacity-40">
+                <div className="mx-16 px-3 pb-4 bg-slate-500 bg-opacity-40">
                     <p className="text-3xl mt-20 font-black text-teal-600 tracking-wide ">
                         1. Upload Your Image Dataset
                     </p>
