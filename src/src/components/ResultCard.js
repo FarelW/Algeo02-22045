@@ -10,7 +10,7 @@ const ResultCard = (props) => {
           ></img>
         </div>
         <div className="border-white bg-black bg-opacity-60 w-full order-2 h-[25px] flex justify-center items-center font-aenoniklight text-[12px]">
-          Similarity : {props.similarity}%
+          Similarity : {props.similarity.toFixed(2)}%
         </div>
       </div>
     );
