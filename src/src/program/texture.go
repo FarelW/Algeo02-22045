@@ -1,15 +1,9 @@
 package program
 
 import (
-	// "fmt"
 	"image"
-	// "log"
-	// "os"
-	// "image/jpeg"
-	// "image/png"
-	// "log"
+
 	"math"
-	// "image/color"
 )
 
 type TexturePixel struct {
@@ -95,8 +89,6 @@ func CHE(matrix [256][256]float32)VectorCHE{
     vektor.C=totalC
     vektor.H=totalH
     vektor.E=totalE
-    
-    // log.Println(vektor.C,vektor.H,vektor.E)
 
     return vektor
 }
@@ -105,14 +97,6 @@ func TextureProcessing(img image.Image) VectorCHE {
     var occ [256][256]float32
 
     var thevector VectorCHE
-
-    // var imageFile string= thefile
-
-    // img, err := loadImage(imageFile)
-    // if err != nil {
-    //     fmt.Println("Error loading the image:", err)
-    //     return thevector
-    // }
 
     imgTexture := getTextureValues(img)
     occ= occurence(imgTexture)

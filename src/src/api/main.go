@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"encoding/base64"
 	"image"
+	"io"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
-	"io"
+
 	color "github.com/FarelW/Algeo02-22045/program"
-	texture "github.com/FarelW/Algeo02-22045/program"
 	imagescraping "github.com/FarelW/Algeo02-22045/program"
+	texture "github.com/FarelW/Algeo02-22045/program"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	// "golang.org/x/tools/go/analysis/passes/appends"
 )
 
 
@@ -97,7 +97,6 @@ func main ()  {
 			}
 		}
 
-		// log.Printf("%s\n",response["imageFile"])
 		log.Println("Image file processed")
 	
 		// Handle multiple dataset files upload
