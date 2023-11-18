@@ -1,8 +1,6 @@
 <h1 align="center">Tugas Besar 2 IF2121 Aljabar Linear dan Geometri</h1>
 <h1 align="center">Kelompok 8 - JUN HOK 88</h3>
-<h3 align="center"></p>
 <h3 align="center">CONTENT-BASED INFORMATION RETRIEVAL (CBIR)</p>
-<h3 align="center">Semester ganjil Tahun 2023/2024</p>
 
 ## Table of Contents
 
@@ -23,8 +21,8 @@ Our Team members :
 - 13522047 - Farel Winalda
 - 13522111 - Ivan Hendrawan Tan
 
-Our Guide Assitant : Fahrian Afdholi (13521031)
-Our Lecturer: Dr. Ir. Rinaldi Munir, M.T.
+<p>Our Lecturer : Dr. Ir. Rinaldi Munir, M.T.</p>
+<p>Our Guide Assitant : Fahrian Afdholi (13521031)</p>
 
 Here is the purpose of making this project :
 - To fulfill the requirements of the final assignment for the course IF2123 Linear Algebra and Geometry.
@@ -69,6 +67,16 @@ npm install
 ```shell
 npm run start
 ```
+
+4. Now, set up the backend server, by first opening new terminal in the main folder Algeo02-22045, type the following command in terminal on specified directory :
+``` shell
+cd src
+go mod tidy
+cd api
+go run ./main.go
+```
+
+At last, your frontend and backend server will run on different port (usually :3000 for frontend and :8080 for backend server), it maybe different depends on your unused port.
 
 ## Features
 - `Toggle Button`: This feature enables users to choose between image retrieval methods, either by color or texture, giving them the flexibility to decide the search method they prefer.
