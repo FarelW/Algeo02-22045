@@ -60,6 +60,7 @@ git clone https://github.com/FarelW/Algeo02-22045
 
 2. Package Download :
 ```shell
+cd  src
 npm install
 ```
 
@@ -70,6 +71,7 @@ npm run start
 
 4. Now, set up the backend server, by first opening new terminal in the main folder Algeo02-22045, type the following command in terminal on specified directory :
 ``` shell
+cd src
 cd src
 go mod tidy
 cd api
