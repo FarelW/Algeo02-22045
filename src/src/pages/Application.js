@@ -67,10 +67,6 @@ const Application = () => {
         );
       }
     }
-    // Pake tiga ini buat di post ke backend ya ler
-    // console.log(formData.get("proccesstype")); // Log the "proccesstype" value (true maka color processing, false maka texture)
-    // console.log(formData.get("image")); // Log the "image" value (base-64 string)
-    // console.log(formData.getAll("selectedFiles[]")); // Log array of selectedFiles
   };
 
   const handleSubmitScraping = async () => {
@@ -80,9 +76,9 @@ const Application = () => {
     }
   
     const formData = new FormData();
-    formData.append("Scrapurl", scrapUrl); // Make sure this matches the form field name expected by your Go server
+    formData.append("Scrapurl", scrapUrl); 
     formData.append("imageFile", imageFile);
-    formData.append("proccesstype", isColor ? "true" : "false"); // Convert boolean to string
+    formData.append("proccesstype", isColor ? "true" : "false"); 
   
     try {
       const response = await fetch('http://localhost:8080/api/scrape', { 
@@ -205,23 +201,19 @@ const Application = () => {
     }
   };
 
-  // Constants
   const itemsPerPage = 4;
   const totalPages = Math.ceil(dummyData.length / itemsPerPage);
 
-  // Handle page change
   const goToPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
   };
 
-  // Calculate the items to display on the current page
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const itemsToDisplay = dummyData.slice(startIndex, endIndex);
 
-  // Function to generate pagination range
   const getPaginationRange = (currentPage, totalPages) => {
     const delta = 2; 
     const range = [];
@@ -352,8 +344,7 @@ const Application = () => {
       if (webcamActive) {
         captureFromWebcam();
       }
-    }, 10000); // Capture every 10 seconds
-
+    }, 10000); 
     return () => {
       clearInterval(captureInterval);
       stopWebcam();
