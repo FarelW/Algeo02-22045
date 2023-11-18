@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+	width: 5px;
+}
+*::-webkit-scrollbar-track {
+	background: var(--primary);
+	box-shadow: 5px #ffffff;
+}
+::-webkit-scrollbar-thumb {
+	background: linear-gradient(#ffffff, var(--secondary));
+	border-radius: 6px;
+	box-shadow: 0px 6px 11px 0px var(--secondary);
+	box-shadow: inset 0px 6px 11px 0px var(--secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+	blur: 8px;
+}
+
+@font-face {
+	font-family: 'aenonik-bold';
+	src: url('../public/fonts/AeonikTRIAL-Bold.otf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'aenonik-bold-italic';
+	src: url('../public/fonts/AeonikTRIAL-BoldItalic.otf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'aenonik-light';
+	src: url('../public/fonts/AeonikTRIAL-Light.otf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'aenonik-light-italic';
+	src: url('../public/fonts/AeonikTRIAL-LightItalic.otf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'aenonik-regular';
+	src: url('../public/fonts/AeonikTRIAL-Regular.otf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'aenonik-regular-italic';
+	src: url('../public/fonts/AeonikTRIAL-RegularItalic.otf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
