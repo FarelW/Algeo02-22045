@@ -1,19 +1,15 @@
 package program
 
 import (
-	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
 	"math"
-	"os"
-	"time"
 )
 
 type PixelRGB struct {
 	R,G,B float32
 	cmax, cmin, delta float32
-	maxtype string
 }
 
 type ImageRGB struct {
@@ -28,32 +24,6 @@ type PixelHSV struct {
 type ImageHSV struct {
 	ValueHSV [][] PixelHSV
 	col, row int
-}
-
-func printMatrix(image ImageRGB) {
-    for y := 0; y < image.row; y++ {
-        for x := 0; x < image.col; x++ {
-            PixelRGB := image.ValueRGB[y][x]
-            fmt.Printf("PixelRGB at (%d, %d) - R: %.2f, G: %.2f, B:%.2f\n", x, y, PixelRGB.R, PixelRGB.G, PixelRGB.B)
-			fmt.Printf("PixelRGB at (%d, %d) - cmax: %.2f, cmin: %.2f\n", x, y, PixelRGB.cmax, PixelRGB.cmin)
-        }
-        fmt.Println()
-    }
-}
-
-func loadImage(filename string) (image.Image, error) {
-    file, err := os.Open(filename)
-    if err != nil {
-        return nil, err
-    }
-    defer file.Close()
-
-    img, _, err := image.Decode(file)
-    if err != nil {
-        return nil, err
-    }
-
-    return img, nil
 }
 
 func getNormalizedRGBValues(img image.Image) ImageRGB {
@@ -238,31 +208,6 @@ func ArrayOfVectorCosineWeighting(vector1[9][72]float32, vector2[9][72]float32) 
     return (topLeftCosine + bottomLeftCosine + bottomRightCosine + topRightCosine + 3*topMiddleCosine + 3*bottomMiddleCosine + 2*middleLeftCosine + 2*middleRightCosine + 4*middleMiddleCosine)/18
 }
 
-func normalizeHistogram(histogram []int, totalPixels int) []float32 {
-    normalizedHistogram := make([]float32, len(histogram))
-    for i, freq := range histogram {
-        normalizedHistogram[i] = float32(freq) / float32(totalPixels)
-    }
-    return normalizedHistogram
-}
-
-func printHistogram(histogram []float32, title string) {
-    fmt.Println(title)
-    for i, value := range histogram {
-        fmt.Printf("Bin %d: %f\n", i, value)
-    }
-}
-
-func printHSVMatrix(image ImageHSV) {
-    for y := 0; y < len(image.ValueHSV); y++ {
-        for x := 0; x < len(image.ValueHSV[y]); x++ {
-            pixelHSV := image.ValueHSV[y][x]
-            fmt.Printf("PixelHSV at (%d, %d) - H: %.2f, S: %.2f, V:%.2f\n", x, y, pixelHSV.H, pixelHSV.S, pixelHSV.V)
-        }
-        fmt.Println()
-    }
-}
-
 func convertHSVToVector(imgHSV ImageHSV, vector *[72]float32) {
     var indexH, indexS, indexV int
 
@@ -319,7 +264,6 @@ func convertHSVToVector(imgHSV ImageHSV, vector *[72]float32) {
     }
 }
 
-
 func cosineSimilarity(vecA, vecB [72]float32) float32 {
     var dotProduct, normA, normB float32
     for i := range vecA {
@@ -333,36 +277,6 @@ func cosineSimilarity(vecA, vecB [72]float32) float32 {
     return (dotProduct / (normA * normB))*100
 }
 
-func timer(name string) func() {
-    start := time.Now()
-    return func() {
-        fmt.Printf("%s took %v\n", name, time.Since(start))
-    }
-}
-
-func main() {
-    defer timer("main")()  
-    imageFile1 := "../../img/beda1.png"
-    imageFile2 := "../../img/beda2.png"
-    img1, err := loadImage(imageFile1)
-    img2, err := loadImage(imageFile2)
-    if err != nil {
-        fmt.Println("Error loading the image:", err)
-        return
-    }
-
-    imgRGB1 := getNormalizedRGBValues(img1)
-    imgRGB2 := getNormalizedRGBValues(img2)
-	var imgHSV1 ImageHSV
-	var imgHSV2 ImageHSV
-    var vector1 [9][72]float32
-    var vector2 [9][72]float32
-	convertRGBToHSVValues(imgRGB1, &imgHSV1)
-	convertRGBToHSVValues(imgRGB2, &imgHSV2)
-    divideHSVMatrixTo9Vectors(imgHSV1, &vector1)
-    divideHSVMatrixTo9Vectors(imgHSV2, &vector2)
-    fmt.Printf("%.2f%%", 100*ArrayOfVectorCosineWeighting(vector1, vector2))
-}
 
 func ColorProcessing(img image.Image) [9][72]float32 {
     imgRGB :=getNormalizedRGBValues(img)
