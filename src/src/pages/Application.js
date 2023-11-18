@@ -15,7 +15,6 @@ const BATCH_SIZE = 100;
 
 const Application = () => {
   const [dummyData, setDummyData] = React.useState([]);
-  // console.log(dummyData);
   // data yang bisa diambil adalah imageFile dan dataset untuk dipass ke backend
   const [imageFile, setImageFile] = React.useState(null); //base64-encoded string
   const [selectedFiles, setSelectedFiles] = React.useState([]); // array of file
@@ -86,7 +85,7 @@ const Application = () => {
     formData.append("proccesstype", isColor ? "true" : "false"); // Convert boolean to string
   
     try {
-      const response = await fetch('http://localhost:8080/api/scrape', { // Change to /api/scrape
+      const response = await fetch('http://localhost:8080/api/scrape', { 
         method: 'POST',
         body: formData,
       });
@@ -95,7 +94,7 @@ const Application = () => {
         setsubmitImage(data.imageFile.base64)
 
         const dataArray = (data.data).map((item, index) => ({
-          fileName: index.toString(), // You can use the index as a fileName or provide a meaningful name
+          fileName: index.toString(),
           ...item,
         }));
 
@@ -141,8 +140,6 @@ const Application = () => {
       formData.append("imageFile", imageFile);
       formData.append("proccesstype", isColor);
     }
-    // console.log("scrapurl",scrapUrl)
-    // console.log(isColor);
 
     // Upload the batch
     try {
@@ -207,12 +204,6 @@ const Application = () => {
       }
     }
   };
-
-  const handleScrapButtonClick = () => {
-    const answer = prompt("What is the website url that you gonna scrap?");
-    setScrapUrl(answer);
-  };
-
 
   // Constants
   const itemsPerPage = 4;
@@ -369,10 +360,6 @@ const Application = () => {
     };
   }, [webcamActive]);
 
-  const toggleWebcam = () => {
-    setWebcamActive(!webcamActive);
-  };
-
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [scrapUrlInput, setScrapUrlInput] = React.useState("");
 
@@ -509,31 +496,7 @@ const Application = () => {
                     >
                       Upload Dataset
                     </button>
-
-                    {/* {dataset ? (
-                      <button
-                        onClick={() => {
-                          setDataSetFilename(null);
-                          setDataset(null);
-                        }}
-                        className="w-5 h-5 rounded-full flex justify-center items-center bg-red-800 absolute right-[-7px] top-[-7px] font-aenonikbold"
-                      >
-                        X
-                      </button>
-                    ) : (
-                      ""
-                    )} */}
                   </div>
-                  {/* {dataset ? (
-                    <p className="text-white font-aenoniklight">
-                      {dataSetFilename}
-                    </p>
-                  ) : (
-                    <p className="text-white font-aenoniklight">
-                      No dataset uploaded.
-                    </p>
-                  )} */}
-
                   <input
                     type="file"
                     id="getDataset"
@@ -617,7 +580,7 @@ const Application = () => {
               </div>
             </div>)}
               <p className="text-white">
-                {(dummyData.length !== 0 || second!=0) ? (
+                {(dummyData.length !== 0 || second !== 0) ? (
                   <>{dummyData.length} Results in {second} seconds</>
                 ) : (
                   <>0 Results in 0 seconds</>
