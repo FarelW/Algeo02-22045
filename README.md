@@ -93,26 +93,18 @@ At last, your frontend and backend server will run on different port (usually :3
 ## File Structures Overview
 ```
 Algeo02-22045
-│   .gitattributes
-│   .gitignore
-│   package-lock.json
-│   package.json
-│   README.md
-│   tailwind.config.js
 │
 ├───doc
-│
+|  └─── Algeo02-22045.pdf
+|
 ├───img
 │
-├───public
-│   │   backgroundCamera.jpg
-│   │   modalBackgroundType4.png
-│   │   react.png
-│   │   tailwind.png
-│   │
-│   └───fonts
-│
 ├───src
+│   | .gitattributes
+│   | .gitignore
+│   | package-lock.json
+│   | package.json
+│   | tailwind.config.js
 │   │   go.mod
 │   │   go.sum
 │   │   index.css
@@ -142,8 +134,10 @@ Algeo02-22045
 │           imagescraping.go
 │           texture.go
 │
-└───test
-        kodoksad.jpg
+│
+│───README.md
+│
+└───test       
 ```
 
 This repository contains main folder structure such as _doc_, _img_, _src_, and _test_.
