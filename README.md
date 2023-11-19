@@ -15,7 +15,7 @@
 
 
 ## Overview
-
+![Screenshot 2023-11-19 153812](https://github.com/FarelW/Algeo02-22045/assets/113753352/1a8d5aa7-ab9a-4e39-9aca-327a51e01efa)
 Our Team members :
 - 13522045 - Elbert Chailes
 - 13522047 - Farel Winalda
