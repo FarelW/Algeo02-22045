@@ -153,6 +153,11 @@ This repository contains main folder structure such as _doc_, _img_, _src_, and 
    - `program`: The "program" folder contains Go programming code related to the color and texture implementation of the Content-Based Image Retrieval (CBIR) algorithm, as well as the algorithm for image scraping. These are combined into a single package called "program," which is used in the "main.go" code to run the website's logic on the backend.
 - `test`: The "test" folder contains the results of similarity testing conducted on the website application. The files in this folder are in PDF format, each containing a report on the testing results.
 
+## Sample Test
+![Ujicoba 2](https://github.com/FarelW/Algeo02-22045/assets/113753352/12d65b53-cf18-41a8-aa47-7ba6563787e0)
+![Ujicoba 4](https://github.com/FarelW/Algeo02-22045/assets/113753352/09d15e99-130a-4726-901c-314d5bf27689)
+![Ujicoba 8](https://github.com/FarelW/Algeo02-22045/assets/113753352/a530fef0-f7ab-4232-bebf-246813daa12b)
+
 ## Links
 - Repository : https://github.com/FarelW/Algeo02-22045/
 - Issue tracker :
