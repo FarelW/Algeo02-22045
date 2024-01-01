@@ -1,8 +1,8 @@
 {
     "version": 2,
     "builds": [
-      { "src": "pages", "use": "@vercel/static" },
-      { "src": "api", "use": "@vercel/go" }
+      { "src": "src/src/pages", "use": "@vercel/static" },
+      { "src": "src/src/api", "use": "@vercel/go" }
     ],
     "routes": [
       { "src": "/api/.*", "dest": "api/main" },
