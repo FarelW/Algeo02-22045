@@ -81,7 +81,7 @@ const Application = () => {
     formData.append("proccesstype", isColor ? "true" : "false"); 
   
     try {
-      const response = await fetch('https://algeo02-22045.vercel.app/api/scrape', { 
+      const response = await fetch('https://algeo02-22045.vercel.app/api/api/scrape', { 
         method: 'POST',
         body: formData,
       });
@@ -140,7 +140,7 @@ const Application = () => {
     // Upload the batch
     try {
       let response;
-      response = await fetch("https://algeo02-22045.vercel.app/api/upload", {
+      response = await fetch("https://algeo02-22045.vercel.app/api/api/upload", {
         method: "POST",
         body: formData,
       });
